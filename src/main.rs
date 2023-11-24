@@ -1,5 +1,5 @@
 #[cfg(feature = "ssr")]
-pub mod nip05;
+pub mod api;
 #[cfg(feature = "ssr")]
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -11,9 +11,7 @@ async fn main() -> std::io::Result<()> {
     use sqlx::{Executor, Pool};
     use leptos_actix::{generate_route_list, LeptosRoutes};
     use siamstr::app::*;
-    use nip05::{verify, lnurl};
-
-    const DB_URL: &str = "sqlite://database.db";
+    use api::{verify, lnurl};
 
     pub async fn create_data_table(db: Pool<Sqlite>) {
         let _con = db
@@ -59,7 +57,7 @@ async fn main() -> std::io::Result<()> {
             .route("/api/{tail:.*}", leptos_actix::handle_server_fns())
             // serve JS/WASM/CSS from `pkg`
             .service(Files::new("/pkg", format!("{site_root}/pkg")))
-            //serve Nostr nip05
+            //serve Nostr api
             .app_data(web::Data::new(db.clone()))
             .service(web::scope("/.well-known").service(verify).service(lnurl))
             // serve other assets from the `assets` directory
@@ -108,12 +106,6 @@ pub fn main() {
 
     leptos::mount_to_body(App);
 }
-
-
-
-
-
-
 
 
 
