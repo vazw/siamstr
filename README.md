@@ -1,9 +1,11 @@
+<!-- <picture> -->
+<!--     <source srcset="https://raw.githubusercontent.com/leptos-rs/leptos/main/docs/logos/Leptos_logo_Solid_White.svg" media="(prefers-color-scheme: dark)"> -->
+<!--     <img src="https://raw.githubusercontent.com/leptos-rs/leptos/main/docs/logos/Leptos_logo_RGB.svg" alt="Leptos Logo"> -->
+<!-- </picture> -->
+
 # Siamstr Nostr Address Provider
 
 ## Running project
-
-`cargo leptos watch`  
-By default, you can access your local project at `http://localhost:8008`
 
 ### Rust Toolchain
 
@@ -25,7 +27,7 @@ To run the project locally,
 
 1. run `npx tailwindcss -i ./input.css -o ./style/output.css --watch` in a terminal - this will build `style/output.css` and automatically rebuild when a change is detected in `input.css`
 1. `cargo leptos watch` in the project directory.
-1. In in your browser, navigate to [http://localhost:3000/?](http://localhost:3000/?)
+1. In in your browser, navigate to [http://localhost:8008/?](http://localhost:8008/?)
 
 ## Executing a Server on a Remote Machine Without the Toolchain
 
@@ -47,6 +49,6 @@ Set the following environment variables (updating for your project as needed):
 export LEPTOS_OUTPUT_NAME="leptos_start"
 export LEPTOS_SITE_ROOT="site"
 export LEPTOS_SITE_PKG_DIR="pkg"
-export LEPTOS_SITE_ADDR="127.0.0.1:3000"
+export LEPTOS_SITE_ADDR="127.0.0.1:8008"
 export LEPTOS_RELOAD_PORT="3001"
 ```
