@@ -1,0 +1,29 @@
+body {
+  font-family: sans-serif;
+  text-align: center;
+  background: #191825;
+}
+
+.domain-name {
+  background: -webkit-linear-gradient(#865dff, #e384ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 40px;
+}
+
+.slogan {
+  background: -webkit-linear-gradient(#865dff, #e384ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 20px;
+}
+
+.message {
+  background: -webkit-linear-gradient(#865dff, #e384ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+div {
+  padding: 0;
+}

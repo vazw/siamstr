@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .input-field:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(50, 50, 50, 255); /* Adjust the color as needed */
+  }
+
+  .btn {
+    @apply focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-lg px-3 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900;
+  }
+
+  .btn--primary {
+    @apply bg-purple-500 text-white;
+  }
+
+  .btn--secondary {
+    @apply bg-slate-100 text-slate-900;
+  }
+}
