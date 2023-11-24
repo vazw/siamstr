@@ -24,7 +24,7 @@ pub fn App() -> impl IntoView {
     provide_meta_context();
 
     view! {
-        <Stylesheet id="leptos" href="/pkg/leptos_start.css"/>
+        <Stylesheet id="leptos" href="/pkg/siamstr.css"/>
 
         // sets the document title
         <Title text="Siamstr"/>
@@ -50,6 +50,36 @@ async fn nostr_pubkey(_key: String) -> String {
 #[component]
 fn HomePage() -> impl IntoView {
     let dark_mode = create_rw_signal(false);
+    create_effect(move|_| {
+        let web_dark_mode = web_sys::window()
+            .unwrap()
+            .document()
+            .unwrap()
+            .document_element()
+            .unwrap()
+            .class_list();
+        let storage = web_sys::window()
+            .unwrap()
+            .local_storage()
+            .expect("LocalStorage Not Found")
+            .unwrap();
+        let stored_mode = match storage.get_item("darkMode") {
+            Ok(dark) => {
+                match dark {
+                    Some(expr) => expr.parse().unwrap_or(false),
+                    None => false,
+                }
+            },
+            Err(_e) => false,
+        };
+        if stored_mode {
+            let _ = web_dark_mode.set_value("dark");
+            dark_mode.set(true);
+        } else {
+            let _ = web_dark_mode.remove_1("dark");
+            dark_mode.set(false);
+        };
+    });
     view! {
         <NavBar/>
         <div class="bg-white dark:bg-zinc-950 max-w-full max-h-full min-w-screen min-h-screen bg-cover grid grid-cols-1 justify-items-center py-20 sm:py-20 md:py-20 lg:py-20">
@@ -92,87 +122,99 @@ fn SignInPage() -> impl IntoView {
                     "Login"
                 </button>
             </AnimatedShow>
-            <AnimatedShow
-                when=show_input
-                show_class="fade-in-1000"
-                hide_class="fade-out-1000"
-                hide_delay=Duration::from_millis(1000)
-            >
-                <div>
-                    <label class="mt-6 text-sm leading-3 text-gray-900 dark:text-gray-300 break-words sm:text-xs md:text-lg">
-                        "สวัสดี!! " {pub_key}
-                    </label>
-                    <Transition fallback=move || {
-                        view! { <div>"Loading..."</div> }
-                    }>
-                        <div>
-                            <label class="mt-6 text-sm leading-3 text-gray-900 dark:text-gray-300 sm:text-xs md:text-lg">
-                                "ตั้งชื่อ"
+            <RegisterPage
+                show_input=show_input
+                pub_key=pub_key
+                username=username
+                use_lnurl=use_lnurl
+                lnurl=lnurl
+            />
+        </div>
+    }
+}
+
+#[component]
+fn RegisterPage(show_input: RwSignal<bool>, pub_key: ReadSignal<String>, username: RwSignal<String>, use_lnurl: RwSignal<bool>, lnurl: RwSignal<String>) -> impl IntoView {
+    view! {
+        <AnimatedShow
+            when=show_input
+            show_class="fade-in-1000"
+            hide_class="fade-out-1000"
+            hide_delay=Duration::from_millis(1000)
+        >
+            <div>
+                <label class="mt-6 text-sm leading-3 text-gray-900 dark:text-gray-300 break-words sm:text-xs md:text-lg">
+                    "สวัสดี!! " {pub_key}
+                </label>
+                <Transition fallback=move || {
+                    view! { <div>"Loading..."</div> }
+                }>
+                    <div>
+                        <label class="mt-6 text-sm leading-3 text-gray-900 dark:text-gray-300 sm:text-xs md:text-lg">
+                            "ตั้งชื่อ"
+                            <input
+                                type="text"
+                                class="text-gray-100 rounded-lg bg-gray-100 dark:bg-gray-900 border-purple-600 border-2 w-7/12"
+                                id="username"
+                                prop:placeholder="username"
+                                on:input=move |ev| {
+                                    let val = event_target_value(&ev)
+                                        .parse::<String>()
+                                        .unwrap_or("".to_string());
+                                    username.set(val);
+                                }
+                            />
+                            "@siamstr.com"
+                        </label>
+                        <br/>
+                        <label class="relative inline-flex items-center mb-5 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                value=""
+                                class="sr-only peer"
+                                on:change=move |_| {
+                                    if use_lnurl.get() {
+                                        use_lnurl.set(false)
+                                    } else {
+                                        use_lnurl.set(true)
+                                    };
+                                }
+                            />
+
+                            <div class="pt-2 w-9 h-4 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 dark:peer-focus:ring-orange-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-orange-600"></div>
+                            <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300 sm:text-xs md:text-lg">
+                                ใช้เป็น LightningURL
+                            </span>
+                        </label>
+                        <AnimatedShow
+                            when=use_lnurl
+                            show_class="fade-in-1000"
+                            hide_class="fade-out-1000"
+                            hide_delay=Duration::from_millis(50)
+                        >
+                            <label class="text-sm leading-3 text-gray-900 dark:text-gray-300 sm:text-sm md:text-lg">
+                                "โปรดกรอก LightningURL ที่มีอยู่"
                                 <input
                                     type="text"
                                     class="text-gray-100 rounded-lg bg-gray-100 dark:bg-gray-900 border-purple-600 border-2 w-7/12"
-                                    id="username"
-                                    prop:placeholder="username"
+                                    id="lnurl"
+                                    prop:placeholder="vazw@getalby.com"
                                     on:input=move |ev| {
                                         let val = event_target_value(&ev)
                                             .parse::<String>()
                                             .unwrap_or("".to_string());
-                                        username.set(val);
-                                    }
-                                />
-                                "@siamstr.com"
-                            </label>
-                            <br/>
-                            <label class="relative inline-flex items-center mb-5 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    value=""
-                                    class="sr-only peer"
-                                    on:change=move |_| {
-                                        if use_lnurl.get() {
-                                            use_lnurl.set(false)
-                                        } else {
-                                            use_lnurl.set(true)
-                                        };
+                                        lnurl.set(val);
                                     }
                                 />
 
-                                <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 dark:peer-focus:ring-orange-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-orange-600"></div>
-                                <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300 sm:text-xs md:text-lg">
-                                    ใช้เป็น LightningURL
-                                </span>
                             </label>
-                            <AnimatedShow
-                                when=use_lnurl
-                                show_class="fade-in-1000"
-                                hide_class="fade-out-1000"
-                                hide_delay=Duration::from_millis(50)
-                            >
-                                <label class="mt-6 text-sm leading-3 text-gray-900 dark:text-gray-300 sm:text-sm md:text-lg">
-                                    "Enter your existing lightning address to enable redirection.
-                                    You can then use your nostr address as your lightning address."
-                                    <input
-                                        type="text"
-                                        class="text-gray-100 rounded-lg bg-gray-100 dark:bg-gray-900 border-purple-600 border-2 w-7/12"
-                                        id="lnurl"
-                                        prop:placeholder="vazw@getalby.com"
-                                        on:input=move |ev| {
-                                            let val = event_target_value(&ev)
-                                                .parse::<String>()
-                                                .unwrap_or("".to_string());
-                                            lnurl.set(val);
-                                        }
-                                    />
-
-                                </label>
-                            </AnimatedShow>
-                            <br/>
-                            <button class="btn btn--primary">"Register"</button>
-                        </div>
-                    </Transition>
-                </div>
-            </AnimatedShow>
-        </div>
+                        </AnimatedShow>
+                        <br/>
+                        <button class="btn btn--primary">"Register"</button>
+                    </div>
+                </Transition>
+            </div>
+        </AnimatedShow>
     }
 }
 
@@ -227,11 +269,27 @@ fn Footer(
             .document_element()
             .unwrap()
             .class_list();
-        if dark_mode.get() {
-            web_dark_mode.remove_1("dark");
+        let storage = web_sys::window()
+            .unwrap()
+            .local_storage()
+            .expect("LocalStorage Not Found")
+            .unwrap();
+        let stored_mode = match storage.get_item("darkMode") {
+            Ok(dark) => {
+                match dark {
+                    Some(expr) => expr.parse().unwrap_or(false),
+                    None => false,
+                }
+            },
+            Err(_e) => false,
+        };
+        if dark_mode.get() & stored_mode {
+            let _ = web_dark_mode.remove_1("dark");
+            let _ = storage.set_item("darkMode", "false");
             dark_mode.set(false);
         } else {
-            web_dark_mode.set_value("dark");
+            let _ = web_dark_mode.set_value("dark");
+            let _ = storage.set_item("darkMode", "true");
             dark_mode.set(true);
         };
     };
