@@ -5,8 +5,18 @@ use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
 use nip07::{get_public_key, sign_event};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen;
+use wasm_bindgen::JsValue;
+
+#[cfg(feature = "ssr")]
+pub const DB_URL: &str = "sqlite://database.db";
+#[cfg(feature = "ssr")]
+use sqlx::{Connection, SqliteConnection, FromRow};
+#[cfg(feature = "ssr")]
+pub async fn db() -> Result<SqliteConnection, ServerFnError> {
+    Ok(SqliteConnection::connect(DB_URL).await?)
+}
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -249,6 +259,27 @@ fn Footer(
         </footer>
     }
 }   
+
+#[server]
+pub async fn check_username(username: String) -> Result<bool, ServerFnError> {
+    let mut con = db().await.unwrap();
+    let query = format!("SELECT * FROM users WHERE name={username}");
+    match sqlx::query(&query).fetch_one(&mut con).await {
+        Ok(_user) => Ok(true),
+        Err(_) => Ok(false),
+    }
+}
+
+#[cfg(feature = "ssr")]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
+pub struct UsersData {
+    pub id: String,
+    pub name: String,
+    pub pubkey: String,
+    pub lightning_url: String,
+    pub created: String,
+}
+
 
 
 
