@@ -5,7 +5,6 @@ use components::footer::*;
 use components::nav::*;
 use components::notfound::*;
 use components::register::*;
-use leptos::leptos_dom::logging::console_log;
 use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
