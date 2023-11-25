@@ -1,8 +1,10 @@
 use leptos::*;
-use chrono::{DateTime,Utc, Local};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
+#[cfg(feature = "ssr")]
+use uuid::Uuid;
+#[cfg(feature = "ssr")]
+use chrono::Local;
 #[cfg(feature = "ssr")]
 pub const DB_URL: &str = "sqlite://database.db";
 #[cfg(feature = "ssr")]
@@ -20,7 +22,7 @@ pub struct BoolRespons {
 #[server]
 pub async fn check_npub(hex_npub: String) -> Result<BoolRespons, ServerFnError> {
     let mut con = db().await.unwrap();
-    let query = format!("SELECT * FROM users WHERE pubkey={hex_npub}");
+    let query = format!("SELECT * FROM users WHERE pubkey='{hex_npub}'");
     match sqlx::query_as::<_, UsersData>(&query).fetch_one(&mut con).await {
         Ok(_user) => Ok(BoolRespons{
             status:1
@@ -34,8 +36,10 @@ pub async fn check_npub(hex_npub: String) -> Result<BoolRespons, ServerFnError> 
 #[server]
 pub async fn check_username(username: String) -> Result<BoolRespons, ServerFnError> {
     let mut con = db().await.unwrap();
-    let query = format!("SELECT * FROM users WHERE name={username}");
-    match sqlx::query_as::<_,UsersData>(&query).fetch_one(&mut con).await {
+    let query = format!("SELECT * FROM users WHERE name='{username}'");
+    let result = sqlx::query_as::<_,UsersData>(&query).fetch_one(&mut con).await;
+    println!("{:#?}", result);
+    match result {
         Ok(_user) => Ok(BoolRespons{
             status:1
         }),
@@ -46,7 +50,7 @@ pub async fn check_username(username: String) -> Result<BoolRespons, ServerFnErr
 }
 
 #[server]
-pub async fn add_user(username: String, pubkey: String, lnurl: String) -> Result<(), ServerFnError> {
+pub async fn add_user(username: String, pubkey: String, lnurl: String) -> Result<BoolRespons, ServerFnError> {
     let id = Uuid::new_v4().to_string();
     let time_now = Local::now().to_rfc3339();
     let mut con = db().await.unwrap();
@@ -59,8 +63,12 @@ pub async fn add_user(username: String, pubkey: String, lnurl: String) -> Result
             .execute(&mut con)
             .await
              {
-        Ok(_user) => Ok(()),
-        Err(_) => Ok(()),
+        Ok(_user) => Ok(BoolRespons{
+            status:1
+        }),
+        Err(_) => Ok(BoolRespons{
+            status:0
+        }),
     }
 }
 
@@ -74,13 +82,6 @@ pub struct UsersData {
     pub lightning_url: String,
     pub created: String,
 }
-
-
-
-
-
-
-
 
 
 
