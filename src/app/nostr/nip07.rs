@@ -1,6 +1,6 @@
 use wasm_bindgen::prelude::*;
 
-#[wasm_bindgen(module = "/src/app/nip07.js")]
+#[wasm_bindgen(module = "/src/app/nostr/nip07.js")]
 extern "C" {
     #[wasm_bindgen(js_name = getPublicKey)]
     pub async fn get_public_key() -> JsValue;
@@ -17,5 +17,7 @@ extern "C" {
     #[wasm_bindgen(js_name = decryptDM)]
     pub async fn decrypt_message(pubkey: JsValue, ciphertext: JsValue) -> JsValue;
 }
+
+
 
 

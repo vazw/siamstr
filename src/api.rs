@@ -26,18 +26,6 @@ pub async fn get_username(
     db: web::Data<Pool<Sqlite>>,
     name: &str,
 ) -> std::io::Result<Option<UsersData>> {
-    // let result =
-    //     sqlx::query("INSERT INTO users (id,name,pubkey,lightning_url,created) VALUES (?,?,?,?,?)")
-    //         .bind("test_id")
-    //         .bind("vaz")
-    //         .bind("58f5a23008ba5a8730a435f68f18da0b10ce538c6e2aa5a1b7812076304d59f7")
-    //         .bind("vazw@getalby.com")
-    //         .bind("test")
-    //         .execute(&**db)
-    //         .await
-    //         .unwrap();
-    // println!("{:#?}", result);
-
     let query = format!("SELECT * FROM users WHERE name='{name}'");
     let exute: UsersData = sqlx::query_as::<_, UsersData>(&query)
         .fetch_one(&**db)
@@ -99,6 +87,8 @@ pub async fn lnurl(db: web::Data<Pool<Sqlite>>, payload: web::Path<String>) -> i
             .json(serde_json::from_str::<Value>("{\"status\":404}").unwrap()),
     }
 }
+
+
 
 
 

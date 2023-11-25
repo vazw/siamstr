@@ -11,6 +11,7 @@ async fn main() -> std::io::Result<()> {
     use sqlx::{Executor, Pool};
     use leptos_actix::{generate_route_list, LeptosRoutes};
     use siamstr::app::*;
+    use siamstr::app::core_api::api::DB_URL;
     use api::{verify, lnurl};
 
     pub async fn create_data_table(db: Pool<Sqlite>) {
@@ -66,7 +67,7 @@ async fn main() -> std::io::Result<()> {
             .service(favicon)
             .leptos_routes(leptos_options.to_owned(), routes.to_owned(), App)
             .app_data(web::Data::new(leptos_options.to_owned()))
-            .wrap(middleware::Compress::default())
+            // .wrap(middleware::Compress::default())
     })
     .bind(&addr)?
     .run()
@@ -106,6 +107,12 @@ pub fn main() {
 
     leptos::mount_to_body(App);
 }
+
+
+
+
+
+
 
 
 
