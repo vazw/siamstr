@@ -1,3 +1,4 @@
+pub mod donate;
 pub mod footer;
 pub mod nav;
 pub mod notfound;
