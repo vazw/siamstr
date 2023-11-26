@@ -38,20 +38,25 @@ pub struct UsersDataResult {
     pub created: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct UserRespons {
+    pub user: Option<UsersDataResult>
+}
+
 #[server]
-pub async fn check_npub(hex_npub: String) -> Result<UsersDataResult, ServerFnError> {
+pub async fn check_npub(hex_npub: String) -> Result<UserRespons, ServerFnError> {
     let mut con = db().await.unwrap();
     let query = format!("SELECT * FROM users WHERE pubkey='{hex_npub}'");
     let result = sqlx::query_as::<_, UsersData>(&query).fetch_one(&mut con).await;
     match result {
-        Ok(user) => Ok(UsersDataResult{
+        Ok(user) => Ok(UserRespons{user: Some(UsersDataResult{
             id:user.id,
             name:user.name,
             pubkey:user.pubkey,
             lightning_url:user.lightning_url,
             created:user.created,
-        }),
-        Err(e) => Err(e.into()),
+        })}),
+        Err(_) => Ok(UserRespons { user: None }),
     }
 }
 
@@ -130,27 +135,6 @@ pub async fn delete_user(pubkey: String) -> Result<BoolRespons, ServerFnError> {
         }),
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
