@@ -6,6 +6,7 @@ pub fn UserPage(
     pub_key: RwSignal<String>,
     username: RwSignal<String>,
     lnurl: RwSignal<String>,
+    use_lnurl: RwSignal<bool>,
     show_user: RwSignal<bool>,
     show_register: RwSignal<bool>,
 ) -> impl IntoView {
@@ -16,15 +17,15 @@ pub fn UserPage(
                 "สวัสดี  " {move || username.get()} "!!"
             </label>
             <br/>
-            <label class="mt-6 text-sm leading-3 text-gray-900 dark:text-gray-300 break-words sm:text-xs md:text-lg">
+            <label class="mt-6 text-[9px] leading-3 text-gray-900 dark:text-gray-300 break-words sm:text-xs md:text-lg">
                 {move || pub_key.get()}
             </label>
             <Transition fallback=move || {
                 view! { <div>"Loading..."</div> }
             }>
                 <div>
-                    <UserGood username=username user_resouce=user/>
-                    <label class="mt-6 text-sm leading-3 text-gray-900 dark:text-gray-300 sm:text-xs md:text-lg">
+                    <label class="pt-6 text-sm leading-3 text-gray-900 dark:text-gray-300 sm:text-xs md:text-lg">
+                        <UserGood username=username user_resouce=user/>
                         <input
                             type="text"
                             class="text-gray-900 dark:text-gray-100 rounded-lg bg-gray-100 dark:bg-gray-900 border-purple-600 border-2 w-7/12"
@@ -46,25 +47,25 @@ pub fn UserPage(
                     </label>
                     <br/>
                     <label class="text-sm leading-3 text-gray-900 dark:text-gray-300 sm:text-xs md:text-lg">
-                        "LightningURL ที่มีอยู่"
+                        "LightningURL ที่มีอยู่" <br/>
+                        <input
+                            type="text"
+                            class="text-gray-900 dark:text-gray-100 rounded-lg bg-gray-100 dark:bg-gray-900 border-purple-600 border-2 w-7/12"
+                            id="lnurl"
+                            prop:value=lnurl.get()
+                            on:input=move |ev| {
+                                let val = event_target_value(&ev)
+                                    .parse::<String>()
+                                    .unwrap_or("".to_string());
+                                lnurl.set(val);
+                            }
+                        />
+
                     </label>
-                    <br/>
-                    <input
-                        type="text"
-                        class="text-gray-900 dark:text-gray-100 rounded-lg bg-gray-100 dark:bg-gray-900 border-purple-600 border-2 w-7/12"
-                        id="lnurl"
-                        prop:value=lnurl.get()
-                        on:input=move |ev| {
-                            let val = event_target_value(&ev)
-                                .parse::<String>()
-                                .unwrap_or("".to_string());
-                            lnurl.set(val);
-                        }
-                    />
 
                     <br/>
                     <button
-                        class="btn btn--secondary"
+                        class="btn btn--delete"
                         on:click=move |_| {
                             let pubk = pub_key.get();
                             spawn_local(async move {
@@ -73,13 +74,14 @@ pub fn UserPage(
                             show_register.set(true);
                             lnurl.set("".to_string());
                             show_user.set(false);
+                            use_lnurl.set(false);
                         }
                     >
 
                         "Delete"
                     </button>
                     <button
-                        class="btn btn--primary"
+                        class="btn btn--edit"
                         on:click=move |_| {
                             let pubk = pub_key.get();
                             let lnurlp = lnurl.get();

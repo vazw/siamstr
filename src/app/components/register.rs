@@ -113,6 +113,7 @@ pub fn RegisterPage(show_register: RwSignal<bool>, show_user: RwSignal<bool>, pu
                 pub_key=pub_key
                 username=username
                 lnurl=lnurl
+                use_lnurl=use_lnurl
                 show_user=show_user
                 show_register=show_register
             />
@@ -287,6 +288,8 @@ pub fn UserGood(username: RwSignal<String>, user_resouce: Resource<String, Resul
         </div>
     }
 }
+
+
 
 
 

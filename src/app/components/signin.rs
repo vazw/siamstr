@@ -28,7 +28,7 @@ pub fn SignInPage() -> impl IntoView {
     };
 
     view! {
-        <div class="block w-9/12 max-w-full bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 text-center justify-items-center p-5">
+        <div class="block w-9/12 max-h-fit max-w-full bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 text-center justify-items-center p-5">
             <AnimatedShow
                 when=show_login
                 show_class="fade-in-1000"
@@ -75,33 +75,38 @@ pub fn SignInPage() -> impl IntoView {
                             Some(respon) => {
                                 match respon {
                                     Ok(user) => {
-                                        username.set(user.name);
-                                        lnurl.set(user.lightning_url);
-                                        show_register.set(false);
-                                        show_user.set(true);
-                                        view! {
-                                            <RegisterPage
-                                                show_register=show_register
-                                                show_user=show_user
-                                                pub_key=pub_key
-                                                username=username
-                                                use_lnurl=use_lnurl
-                                                lnurl=lnurl
-                                            />
+                                        match user.user {
+                                            Some(user) => {
+                                                username.set(user.name);
+                                                lnurl.set(user.lightning_url);
+                                                show_register.set(false);
+                                                show_user.set(true);
+                                                view! {
+                                                    <RegisterPage
+                                                        show_register=show_register
+                                                        show_user=show_user
+                                                        pub_key=pub_key
+                                                        username=username
+                                                        use_lnurl=use_lnurl
+                                                        lnurl=lnurl
+                                                    />
+                                                }
+                                            }
+                                            None => {
+                                                view! {
+                                                    <RegisterPage
+                                                        show_register=show_register
+                                                        show_user=show_user
+                                                        pub_key=pub_key
+                                                        username=username
+                                                        use_lnurl=use_lnurl
+                                                        lnurl=lnurl
+                                                    />
+                                                }
+                                            }
                                         }
                                     }
-                                    Err(_e) => {
-                                        view! {
-                                            <RegisterPage
-                                                show_register=show_register
-                                                show_user=show_user
-                                                pub_key=pub_key
-                                                username=username
-                                                use_lnurl=use_lnurl
-                                                lnurl=lnurl
-                                            />
-                                        }
-                                    }
+                                    Err(_e) => view! { <Blank/> },
                                 }
                             }
                             _ => {
@@ -120,29 +125,6 @@ pub fn SignInPage() -> impl IntoView {
 fn Blank() -> impl IntoView {
     view! { <p></p> }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -1,6 +1,7 @@
 pub mod components;
 pub mod core_api;
 pub mod nostr;
+use components::donate::*;
 use components::footer::*;
 use components::nav::*;
 use components::notfound::*;
@@ -67,6 +68,7 @@ fn HomePage() -> impl IntoView {
         <NavBar/>
         <div class="bg-white dark:bg-zinc-950 max-w-full max-h-full min-w-screen min-h-screen bg-cover grid grid-cols-1 justify-items-center py-20 sm:py-20 md:py-20 lg:py-20">
             <SignInPage/>
+            <Donate/>
         </div>
         <Footer dark_mode=dark_mode/>
     }
