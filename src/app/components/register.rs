@@ -1,175 +1,17 @@
 use core::time::Duration;
 use leptos::*;
-use crate::app::nostr::nip07::{get_public_key, sign_event};
-use serde_wasm_bindgen;
 use crate::app::core_api::api::*;
-
-async fn nostr_pubkey(_key: String) -> String {
-    let key = get_public_key().await;
-    let key: String = serde_wasm_bindgen::from_value(key).unwrap();
-    key
-}
+use crate::app::components::user::UserPage;
 
 #[component]
-pub fn SignInPage() -> impl IntoView {
-    let use_lnurl = create_rw_signal(false);
-    let lnurl = create_rw_signal("".to_string());
-    let show_input = create_rw_signal(false);
-    let show_login = create_rw_signal(true);
-    let (pub_key, set_pubkey) = create_signal("".to_string());
-    let username = create_rw_signal("".to_string());
-    let nostr_public_key = create_local_resource(pub_key, nostr_pubkey);
-    let on_click = move |_| {
-        let key = nostr_public_key.get().expect("Not Found Nostr Extensions");
-        show_input.set(true);
-        show_login.set(false);
-        set_pubkey(key);
-    };
-
-    view! {
-        <div class="block w-9/12 max-w-full bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 text-center justify-items-center p-5">
-            <AnimatedShow
-                when=show_login
-                show_class="fade-in-1000"
-                hide_class="fade-out-100"
-                hide_delay=Duration::from_millis(100)
-            >
-                <label class="mt-6 text-sm leading-3 text-gray-900 dark:text-gray-300 break-words sm:text-xs md:text-lg">
-                    "กด Login ด้วย Nostr Extensions"
-                </label>
-                <br/>
-                <button class="btn btn--primary" on:click=on_click>
-                    "Login"
-                </button>
-            </AnimatedShow>
-            <RegisterPage
-                show_input=show_input
-                pub_key=pub_key
-                username=username
-                use_lnurl=use_lnurl
-                lnurl=lnurl
-            />
-        </div>
-    }
-}
-
-#[component]
-fn ButtonGood(username: RwSignal<String>, pub_key: ReadSignal<String>, lnurl: RwSignal<String>,user_resouce: Resource<String, Result<BoolRespons, ServerFnError>>) -> impl IntoView {
-    let on_summit = move |_| {
-        spawn_local(async move {
-            let _ = add_user(username.get(), pub_key.get(), lnurl.get()).await;
-        });
-
-    };
-    view! {
-        <div class="text-xs text-red-500 relative pt-5">
-            <Suspense fallback=move || view! { <p>"กำลังตรวจสอบ"</p> }>
-                // handles the error from the resource
-                <ErrorBoundary fallback=|_| {
-                    view! { <p>"เกิดข้อผิดพลาด"</p> }
-                }>
-                    {move || {
-                        user_resouce
-                            .clone()
-                            .get()
-                            .map(|view| {
-                                view.map(|value| {
-                                    if username.get().is_empty() {
-                                        view! {
-                                            <button
-                                                class="btn btn--secondary cursor-not-allowed"
-                                                disabled
-                                            >
-                                                "Register"
-                                            </button>
-                                        }
-                                    } else {
-                                        match value.status {
-                                            1 => {
-                                                view! {
-                                                    <button
-                                                        class="btn btn--secondary cursor-not-allowed"
-                                                        disabled
-                                                    >
-                                                        "Register"
-                                                    </button>
-                                                }
-                                            }
-                                            0 => {
-                                                view! {
-                                                    <button class="btn btn--primary" on:click=on_summit>
-                                                        "Register"
-                                                    </button>
-                                                }
-                                            }
-                                            _ => {
-                                                view! {
-                                                    <button
-                                                        class="btn btn--secondary cursor-not-allowed"
-                                                        disabled
-                                                    >
-                                                        "Register"
-                                                    </button>
-                                                }
-                                            }
-                                        }
-                                    }
-                                })
-                            })
-                    }}
-
-                </ErrorBoundary>
-            </Suspense>
-        </div>
-    }
-}
-#[component]
-fn UserGood(username: RwSignal<String>, user_resouce: Resource<String, Result<BoolRespons, ServerFnError>>) -> impl IntoView {
-    view! {
-        <div class="text-xs text-red-500 relative pt-5">
-            <Suspense fallback=move || view! { <p>"กำลังตรวจสอบ"</p> }>
-                // handles the error from the resource
-                <ErrorBoundary fallback=|_| {
-                    view! { <p>"เกิดข้อผิดพลาด"</p> }
-                }>
-                    {move || {
-                        user_resouce
-                            .clone()
-                            .get()
-                            .map(|view| {
-                                view.map(|value| {
-                                    if username.get().is_empty() {
-                                        view! { <p>""</p> }
-                                    } else {
-                                        match value.status {
-                                            1 => view! { <p>"มีคนใช้แล้ว"</p> },
-                                            0 => view! { <p>"ใช้ได้"</p> },
-                                            _ => {
-                                                view! {
-                                                    <p>"เกิดข้อผิดพลาด"</p>
-                                                }
-                                            }
-                                        }
-                                    }
-                                })
-                            })
-                    }}
-
-                </ErrorBoundary>
-            </Suspense>
-        </div>
-    }
-}
-
-#[component]
-pub fn RegisterPage(show_input: RwSignal<bool>, pub_key: ReadSignal<String>, username: RwSignal<String>, use_lnurl: RwSignal<bool>, lnurl: RwSignal<String>) -> impl IntoView {
+pub fn RegisterPage(show_register: RwSignal<bool>, show_user: RwSignal<bool>, pub_key: RwSignal<String>, username: RwSignal<String>, use_lnurl: RwSignal<bool>, lnurl: RwSignal<String>) -> impl IntoView {
     let user = create_resource(move || username.get(),check_username);
     view! {
         <AnimatedShow
-            when=show_input
+            when=show_register
             show_class="fade-in-1000"
             hide_class="fade-out-1000"
-            hide_delay=Duration::from_millis(1000)
+            hide_delay=Duration::from_millis(100)
         >
             <div>
                 <label class="mt-6 text-sm leading-3 text-gray-900 dark:text-gray-300 break-words sm:text-xs md:text-lg">
@@ -191,7 +33,11 @@ pub fn RegisterPage(show_input: RwSignal<bool>, pub_key: ReadSignal<String>, use
                                     let val = event_target_value(&ev)
                                         .parse::<String>()
                                         .unwrap_or("".to_string());
-                                    username.set(val);
+                                    if val.is_empty() {
+                                        username.set(val);
+                                    } else {
+                                        username.set(val);
+                                    }
                                 }
                             />
                             "@siamstr.com"
@@ -211,7 +57,7 @@ pub fn RegisterPage(show_input: RwSignal<bool>, pub_key: ReadSignal<String>, use
                                 }
                             />
 
-                            <div class="pt-2 w-9 h-4 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 dark:peer-focus:ring-orange-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-orange-600"></div>
+                            <div class="w-9 h-4 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 dark:peer-focus:ring-orange-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-orange-600"></div>
                             <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300 sm:text-xs md:text-lg">
                                 ใช้เป็น LightningURL
                             </span>
@@ -222,7 +68,7 @@ pub fn RegisterPage(show_input: RwSignal<bool>, pub_key: ReadSignal<String>, use
                             hide_class="fade-out-1000"
                             hide_delay=Duration::from_millis(50)
                         >
-                            <label class="text-sm leading-3 text-gray-900 dark:text-gray-300 sm:text-sm md:text-lg">
+                            <label class="text-sm leading-3 text-gray-900 dark:text-gray-300 sm:text-xs md:text-lg">
                                 "โปรดกรอก LightningURL ที่มีอยู่"
                             </label>
                             <br/>
@@ -246,6 +92,8 @@ pub fn RegisterPage(show_input: RwSignal<bool>, pub_key: ReadSignal<String>, use
                         </AnimatedShow>
                         <br/>
                         <ButtonGood
+                            show_register=show_register
+                            show_user=show_user
                             username=username
                             pub_key=pub_key
                             lnurl=lnurl
@@ -255,7 +103,205 @@ pub fn RegisterPage(show_input: RwSignal<bool>, pub_key: ReadSignal<String>, use
                 </Transition>
             </div>
         </AnimatedShow>
+        <AnimatedShow
+            when=show_user
+            show_class="fade-in-1000"
+            hide_class="fade-out-1000"
+            hide_delay=Duration::from_millis(100)
+        >
+            <UserPage
+                pub_key=pub_key
+                username=username
+                lnurl=lnurl
+                show_user=show_user
+                show_register=show_register
+            />
+        </AnimatedShow>
     }
 }
+
+#[component]
+fn ButtonGood(show_register: RwSignal<bool>, show_user: RwSignal<bool>, username: RwSignal<String>, pub_key: RwSignal<String>, lnurl: RwSignal<String>,user_resouce: Resource<String, Result<BoolRespons, ServerFnError>>) -> impl IntoView {
+    let on_summit = move |_| {
+        let pubk = pub_key.get();
+        let name = username.get();
+        let lnurlp = lnurl.get();
+        let consume_pubket = pub_key.get();
+        spawn_local(async move {
+            let _ = add_user(name, consume_pubket, lnurlp).await;
+        });
+        show_register.set(false);
+        pub_key.set(pubk);
+        show_user.set(true);
+    };
+    view! {
+        <div class="text-xs text-red-500 relative pt-5">
+            <Suspense fallback=move || {
+                view! {
+                    <div role="status">
+                        <svg
+                            aria-hidden="true"
+                            class="inline w-4 h-4 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
+                            viewBox="0 0 100 101"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                                fill="currentColor"
+                            ></path>
+                            <path
+                                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                                fill="currentFill"
+                            ></path>
+                        </svg>
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                }
+            }>
+                // handles the error from the resource
+                <ErrorBoundary fallback=|_| {
+                    view! { <p>"เกิดข้อผิดพลาด"</p> }
+                }>
+                    {move || {
+                        user_resouce
+                            .clone()
+                            .get()
+                            .map(|view| {
+                                view.map(|value| {
+                                    if username.get().is_empty() {
+                                        view! {
+                                            <button
+                                                class="btn btn--secondary cursor-not-allowed"
+                                                disabled
+                                            >
+                                                "คิดชื่อนานอะ 😢"
+                                            </button>
+                                        }
+                                    } else {
+                                        match value.status {
+                                            1 => {
+                                                view! {
+                                                    <button
+                                                        class="btn btn--secondary cursor-not-allowed"
+                                                        disabled
+                                                    >
+                                                        "เอาใหม่ ๆ"
+                                                    </button>
+                                                }
+                                            }
+                                            0 => {
+                                                view! {
+                                                    <button class="btn btn--primary" on:click=on_summit>
+                                                        "สมัครรับ Nip-05"
+                                                    </button>
+                                                }
+                                            }
+                                            _ => {
+                                                view! {
+                                                    <button
+                                                        class="btn btn--secondary cursor-not-allowed"
+                                                        disabled
+                                                    >
+                                                        "😿"
+                                                    </button>
+                                                }
+                                            }
+                                        }
+                                    }
+                                })
+                            })
+                    }}
+
+                </ErrorBoundary>
+            </Suspense>
+        </div>
+    }
+}
+#[component]
+pub fn UserGood(username: RwSignal<String>, user_resouce: Resource<String, Result<BoolRespons, ServerFnError>>) -> impl IntoView {
+    view! {
+        <div class="text-xs relative">
+            <Suspense fallback=move || {
+                view! {
+                    <div role="status">
+                        <svg
+                            aria-hidden="true"
+                            class="inline w-4 h-4 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
+                            viewBox="0 0 100 101"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                                fill="currentColor"
+                            ></path>
+                            <path
+                                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                                fill="currentFill"
+                            ></path>
+                        </svg>
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                }
+            }>
+                // handles the error from the resource
+                <ErrorBoundary fallback=|_| {
+                    view! { <p>"เกิดข้อผิดพลาด"</p> }
+                }>
+                    {move || {
+                        user_resouce
+                            .clone()
+                            .get()
+                            .map(|view| {
+                                view.map(|value| {
+                                    if username.get().is_empty() {
+                                        view! { <p>""</p> }
+                                    } else {
+                                        match value.status {
+                                            1 => {
+                                                view! {
+                                                    <p class="text-red-500">
+                                                        "มีคนใช้แล้ว"
+                                                    </p>
+                                                }
+                                            }
+                                            0 => {
+                                                view! { <p class="text-green-500">"ใช้ได้"</p> }
+                                            }
+                                            _ => {
+                                                view! {
+                                                    <p class="text-red-500">
+                                                        "เกิดข้อผิดพลาด"
+                                                    </p>
+                                                }
+                                            }
+                                        }
+                                    }
+                                })
+                            })
+                    }}
+
+                </ErrorBoundary>
+            </Suspense>
+        </div>
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
