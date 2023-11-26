@@ -90,6 +90,3 @@ pub async fn lnurl(db: web::Data<Pool<Sqlite>>, payload: web::Path<String>) -> i
 
 
 
-
-
-

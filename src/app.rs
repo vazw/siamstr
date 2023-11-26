@@ -4,7 +4,7 @@ pub mod nostr;
 use components::footer::*;
 use components::nav::*;
 use components::notfound::*;
-use components::register::*;
+use components::signin::*;
 use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
