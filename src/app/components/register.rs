@@ -27,7 +27,6 @@ pub fn RegisterPage(show_register: RwSignal<bool>, show_user: RwSignal<bool>, pu
                             <input
                                 type="text"
                                 class="text-gray-900 dark:text-gray-100 rounded-lg bg-gray-100 dark:bg-gray-900 border-purple-600 border-2 w-7/12"
-                                id="username"
                                 prop:placeholder="username"
                                 on:input=move |ev| {
                                     let val = event_target_value(&ev)
@@ -75,7 +74,6 @@ pub fn RegisterPage(show_register: RwSignal<bool>, show_user: RwSignal<bool>, pu
                             <input
                                 type="text"
                                 class="text-gray-900 dark:text-gray-100 rounded-lg bg-gray-100 dark:bg-gray-900 border-purple-600 border-2 w-7/12"
-                                id="lnurl"
                                 prop:placeholder="vazw@getalby.com"
                                 on:input=move |ev| {
                                     let val = event_target_value(&ev)
@@ -288,6 +286,8 @@ pub fn UserGood(username: RwSignal<String>, user_resouce: Resource<String, Resul
         </div>
     }
 }
+
+
 
 
 

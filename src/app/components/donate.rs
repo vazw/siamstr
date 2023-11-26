@@ -50,15 +50,12 @@ pub fn Donate() -> impl IntoView {
                 ></path>
             </svg>
             <div>
-                <label
-                    for="email"
-                    class="block my-1 text-sm font-medium text-gray-900 dark:text-white"
-                >
+                <label class="block my-1 text-sm font-medium text-gray-900 dark:text-white">
                     - หรือ -
                 </label>
                 <input
                     type="email"
-                    class="text-xs sm:text-[8px] md:text-sm bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 text-center"
+                    class="text-[6px] sm:text-xs md:text-sm bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 text-center"
                     prop:value="LNURL1DP68GURN8GHJ7EM9W3SKCCNE9E3K7MF0D3H82UNVWQHHVCT6WU7PKHC0"
                 />
             </div>
