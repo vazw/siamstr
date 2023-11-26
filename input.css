@@ -17,6 +17,6 @@
   }
 
   .btn--secondary {
-    @apply bg-slate-100 text-slate-900;
+    @apply bg-slate-100 text-black dark:text-white;
   }
 }
