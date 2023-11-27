@@ -22,7 +22,7 @@ pub fn RegisterPage(show_register: RwSignal<bool>, show_user: RwSignal<bool>, pu
                 }>
                     <div>
                         <UserGood username=username user_resouce=user/>
-                        <label class="mt-6 text-sm leading-3 text-gray-900 dark:text-gray-300 sm:text-xs md:text-lg">
+                        <label class="text-sm leading-3 text-gray-900 dark:text-gray-300 sm:text-xs md:text-lg">
                             "ตั้งชื่อ"
                             <input
                                 type="text"
@@ -42,7 +42,7 @@ pub fn RegisterPage(show_register: RwSignal<bool>, show_user: RwSignal<bool>, pu
                             "@siamstr.com"
                         </label>
                         <br/>
-                        <label class="relative inline-flex items-center mt-5 cursor-pointer">
+                        <label class="relative inline-flex items-center cursor-pointer">
                             <input
                                 type="checkbox"
                                 value=""
@@ -134,7 +134,7 @@ fn ButtonGood(show_register: RwSignal<bool>, show_user: RwSignal<bool>, username
         show_user.set(true);
     };
     view! {
-        <div class="text-xs text-red-500 relative pt-5">
+        <div class="text-xs text-red-500 relative">
             <Suspense fallback=move || {
                 view! {
                     <div role="status">
@@ -286,6 +286,10 @@ pub fn UserGood(username: RwSignal<String>, user_resouce: Resource<String, Resul
         </div>
     }
 }
+
+
+
+
 
 
 

@@ -100,7 +100,7 @@ pub fn UserGood(
     user_resouce: Resource<String, Result<BoolRespons, ServerFnError>>,
 ) -> impl IntoView {
     view! {
-        <div class="text-xs mt-2 pl-10">
+        <div class="text-xs mt-2 pl-6">
             <Suspense fallback=move || {
                 view! {
                     <div role="status">
@@ -275,6 +275,8 @@ fn ButtonGood(
         </Suspense>
     }
 }
+
+
 
 
 
