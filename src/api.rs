@@ -27,11 +27,12 @@ pub async fn get_username(
     name: &str,
 ) -> std::io::Result<Option<UsersData>> {
     let query = format!("SELECT * FROM users WHERE name='{name}'");
-    let exute: UsersData = sqlx::query_as::<_, UsersData>(&query)
+    match sqlx::query_as::<_, UsersData>(&query)
         .fetch_one(&**db)
-        .await
-        .unwrap();
-    Ok(Some(exute))
+        .await {
+            Ok(user) => Ok(Some(user)),
+            Err(_) => Ok(None),
+    } 
 }
 
 #[get("/nostr.json")]
@@ -87,6 +88,8 @@ pub async fn lnurl(db: web::Data<Pool<Sqlite>>, payload: web::Path<String>) -> i
             .json(serde_json::from_str::<Value>("{\"status\":404}").unwrap()),
     }
 }
+
+
 
 
 
