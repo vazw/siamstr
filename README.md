@@ -1,7 +1,7 @@
-<!-- <picture> -->
-<!--     <source srcset="https://raw.githubusercontent.com/leptos-rs/leptos/main/docs/logos/Leptos_logo_Solid_White.svg" media="(prefers-color-scheme: dark)"> -->
-<!--     <img src="https://raw.githubusercontent.com/leptos-rs/leptos/main/docs/logos/Leptos_logo_RGB.svg" alt="Leptos Logo"> -->
-<!-- </picture> -->
+<picture>
+    <source srcset="https://raw.githubusercontent.com/vaz/siamstr/main/docs/pic.png" media="(prefers-color-scheme: dark)">
+    <img src="https://raw.githubusercontent.com/vaz/siamstr/main/docs/pic.png" alt="siamstr Logo">
+</picture>
 
 # Siamstr Nostr Address Provider
 
@@ -35,18 +35,21 @@ After running a `cargo leptos build --release` the minimum files needed are:
 
 1. The server binary located in `target/server/release`
 2. The `site` directory and all files within located in `target/site`
+   - css files will be in the target/site too.
 
 Copy these files to your remote server. The directory structure should be:
 
 ```text
-leptos_start
+siamstr
 site/
+users.json (optional)
+database.db (auto-generated)
 ```
 
 Set the following environment variables (updating for your project as needed):
 
 ```sh
-export LEPTOS_OUTPUT_NAME="leptos_start"
+export LEPTOS_OUTPUT_NAME="siamstr"
 export LEPTOS_SITE_ROOT="site"
 export LEPTOS_SITE_PKG_DIR="pkg"
 export LEPTOS_SITE_ADDR="127.0.0.1:8008"
