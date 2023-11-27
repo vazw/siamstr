@@ -1,6 +1,6 @@
 <picture>
-    <source srcset="https://raw.githubusercontent.com/vaz/siamstr/main/docs/pic.png" media="(prefers-color-scheme: dark)">
-    <img src="https://raw.githubusercontent.com/vaz/siamstr/main/docs/pic.png" alt="siamstr Logo">
+    <source srcset="https://github.com/vazw/siamstr/blob/main/docs/pic.png?raw=true" media="(prefers-color-scheme: dark)">
+    <img src="https://github.com/vazw/siamstr/blob/main/docs/pic.png?raw=true" alt="siamstr Logo">
 </picture>
 
 # Siamstr Nostr Address Provider
