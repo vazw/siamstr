@@ -36,22 +36,51 @@ After running a `cargo leptos build --release` the minimum files needed are:
 1. The server binary located in `target/server/release`
 2. The `site` directory and all files within located in `target/site`
    - css files will be in the target/site too.
+3. The `Dockerfile` and `docker-compose.yml` located in `docs/` directory
+4. you may alreay set your domain-name dns pointing to your remote server IP Address
 
 Copy these files to your remote server. The directory structure should be:
 
 ```text
 siamstr
 site/
+Dockerfile
+docker-compose.yml
 users.json (optional)
 database.db (auto-generated)
 ```
 
-Set the following environment variables (updating for your project as needed):
+you should have `certbot` `docker` `nginx` installed on your remote server if not:
+
+Ubuntu
 
 ```sh
-export LEPTOS_OUTPUT_NAME="siamstr"
-export LEPTOS_SITE_ROOT="site"
-export LEPTOS_SITE_PKG_DIR="pkg"
-export LEPTOS_SITE_ADDR="127.0.0.1:8008"
-export LEPTOS_RELOAD_PORT="3001"
+sudo apt install certbot nginx docker docker-compose
 ```
+
+Debian should follow the installtion process on docker <a herf="https://docs.docker.com/engine/install/debian/">website</a>
+
+```sh
+sudo apt install certbot nginx
+```
+
+setting up certbot and nginx config:
+
+```sh
+sudo certbot certonly --nginx -d example.com
+# sudo certbot certonly --nginx -d www.siamstr.com (optional)
+```
+
+Copy `text` inside `nginx.config` and paste into `/etc/nginx/site-enabled/default` and restart nginx service
+
+```sh
+sudo systemctl restart nginx.service
+```
+
+Then start docker compose:
+
+```sh
+docker compose up
+```
+
+# แค่เนี้ย ง่าย ๆ เสร็จแล้ว
