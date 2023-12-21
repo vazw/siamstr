@@ -58,7 +58,7 @@ Ubuntu
 sudo apt install certbot nginx docker docker-compose
 ```
 
-Debian should follow the installtion process on docker <a herf="https://docs.docker.com/engine/install/debian/">website</a>
+Debian should follow the installtion process on docker [website](https://docs.docker.com/engine/install/debian/)
 
 ```sh
 sudo apt install certbot nginx
