@@ -1,7 +1,7 @@
 use actix_web::{get, web, HttpResponse, Responder};
-use sqlx::{FromRow, Pool, Sqlite};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use sqlx::{FromRow, Pool, Sqlite};
 
 #[derive(Debug, Deserialize)]
 pub struct Name {
@@ -29,10 +29,11 @@ pub async fn get_username(
     let query = format!("SELECT * FROM users WHERE name='{name}'");
     match sqlx::query_as::<_, UsersData>(&query)
         .fetch_one(&**db)
-        .await {
-            Ok(user) => Ok(Some(user)),
-            Err(_) => Ok(None),
-    } 
+        .await
+    {
+        Ok(user) => Ok(Some(user)),
+        Err(_) => Ok(None),
+    }
 }
 
 #[get("/nostr.json")]
@@ -61,35 +62,39 @@ pub async fn lnurl(db: web::Data<Pool<Sqlite>>, payload: web::Path<String>) -> i
                     .json(serde_json::from_str::<Value>("{\"status\":404}").unwrap());
             };
             let user_domain: Vec<&str> = user.lightning_url.split("@").collect();
-            let respon = reqwest::get(format!(
-                "https://{}/.well-known/lnurlp/{}",
-                user_domain[1], user_domain[0]
-            ))
-            .await
-            .unwrap()
-            .text()
-            .await
-            .unwrap();
-            let json_respon = serde_json::from_str::<Value>(&respon);
-            match json_respon {
-                Ok(expr) => {
-                    return HttpResponse::Ok().json(expr);
-                }
-                Err(expr) => {
-                    println!("{:#?}", expr);
-                    return HttpResponse::NotFound().json(
-                        serde_json::from_str::<Value>("{{\"status\":400,\"message\":\"Error\"}")
+            if user_domain.len() > 1 {
+                let respon = reqwest::get(format!(
+                    "https://{}/.well-known/lnurlp/{}",
+                    user_domain[1], user_domain[0]
+                ))
+                .await
+                .unwrap()
+                .text()
+                .await
+                .unwrap();
+                let json_respon = serde_json::from_str::<Value>(&respon);
+                match json_respon {
+                    Ok(expr) => {
+                        return HttpResponse::Ok().json(expr);
+                    }
+                    Err(expr) => {
+                        println!("{:#?}", expr);
+                        return HttpResponse::NotFound().json(
+                            serde_json::from_str::<Value>(
+                                "{{\"status\":400,\"message\":\"Error\"}",
+                            )
                             .unwrap(),
-                    );
+                        );
+                    }
                 }
+            } else {
+                return HttpResponse::NotFound().json(
+                    serde_json::from_str::<Value>("{{\"status\":400,\"message\":\"Error\"}")
+                        .unwrap(),
+                );
             }
         }
         None => HttpResponse::NotFound()
             .json(serde_json::from_str::<Value>("{\"status\":404}").unwrap()),
     }
 }
-
-
-
-
-
