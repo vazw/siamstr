@@ -1,12 +1,9 @@
-use crate::app::core_api::api::*;
 use leptos::*;
 
 #[component]
-pub fn UsersCount() -> impl IntoView {
-    let count = create_rw_signal(0);
-    let users_count = create_resource(move || count.get(), count_users);
+pub fn UsersCount(count: RwSignal<i32>) -> impl IntoView {
     view! {
-        <div class="block w-9/12 max-h-fit max-w-full bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 text-center justify-items-center p-5">
+        <div class="mt-8 block w-9/12 max-w-full bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 text-center justify-items-center p-5">
             <Suspense fallback=move || {
                 view! {
                     <div role="status">
@@ -34,20 +31,10 @@ pub fn UsersCount() -> impl IntoView {
                 <ErrorBoundary fallback=|_| {
                     view! { <p>"เกิดข้อผิดพลาด"</p> }
                 }>
-                    {move || {
-                        match users_count.clone().get() {
-                            Some(respon) => {
-                                match respon {
-                                    Ok(user) => view! { {format!("{:#?}", user.count)} },
-                                    Err(_e) => view! { {"0".to_string()} },
-                                }
-                            }
-                            _ => {
-                                view! { {"0".to_string()} }
-                            }
-                        }
-                    }}
-
+                    <label class="mt-6 text-sm leading-3 text-gray-900 dark:text-gray-300 break-words sm:text-xs md:text-lg">
+                        "สมาชิกทั้งหมด " {move || count.get()}
+                        " คน🎉"
+                    </label>
                 </ErrorBoundary>
             </Suspense>
         </div>

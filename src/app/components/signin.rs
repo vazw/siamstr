@@ -21,7 +21,7 @@ pub fn SignInPage() -> impl IntoView {
     let nostr_public_key = create_local_resource(pub_key, nostr_pubkey);
     let registerd = create_resource(move || pub_key.get(), check_npub);
     let on_click = move |_| {
-        let key = nostr_public_key.get().expect("Not Found Nostr Extensions");
+        let key = nostr_public_key.clone().get().expect("Not Found Nostr Extensions");
         pub_key.set(key);
         show_login.set(false);
         show_register.set(true);

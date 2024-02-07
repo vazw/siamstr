@@ -1,6 +1,7 @@
 pub mod components;
 pub mod core_api;
 pub mod nostr;
+use crate::app::core_api::api::count_users;
 use components::donate::*;
 use components::footer::*;
 use components::nav::*;
@@ -37,6 +38,15 @@ pub fn App() -> impl IntoView {
 #[component]
 fn HomePage() -> impl IntoView {
     let dark_mode = create_rw_signal(false);
+    let count = create_rw_signal(0);
+    let users_count = create_local_resource(move || count.get(), count_users);
+    create_effect(move |_| match users_count.clone().get() {
+        Some(respon) => match respon {
+            Ok(user) => count.set(user.count),
+            Err(_e) => count.set(0),
+        },
+        _ => count.set(0),
+    });
     create_effect(move |_| {
         let web_dark_mode = web_sys::window()
             .unwrap()
@@ -69,7 +79,7 @@ fn HomePage() -> impl IntoView {
         <NavBar/>
         <div class="bg-white dark:bg-zinc-950 max-w-full max-h-full min-w-screen min-h-screen bg-cover grid grid-cols-1 justify-items-center py-20 sm:py-20 md:py-20 lg:py-20">
             <SignInPage/>
-            <UsersCount/>
+            <UsersCount count=count/>
             <Donate/>
         </div>
         <Footer dark_mode=dark_mode/>

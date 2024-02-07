@@ -14,11 +14,6 @@ pub async fn db() -> Result<SqliteConnection, ServerFnError> {
     Ok(SqliteConnection::connect(DB_URL).await?)
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct BoolRespons {
-    pub status: i8,
-}
-
 #[cfg(feature = "ssr")]
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize, PartialEq, Eq)]
 pub struct UsersData {
@@ -27,6 +22,12 @@ pub struct UsersData {
     pub pubkey: String,
     pub lightning_url: String,
     pub created: String,
+}
+
+#[cfg(feature = "ssr")]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, PartialEq, Eq)]
+pub struct UsersCount {
+    pub count: i32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -48,10 +49,9 @@ pub struct CountsRespon {
     pub count: i32,
 }
 
-#[cfg(feature = "ssr")]
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, PartialEq, Eq)]
-pub struct UsersCount {
-    pub count: i32,
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct BoolRespons {
+    pub status: i8,
 }
 
 #[server]
