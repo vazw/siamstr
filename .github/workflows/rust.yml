@@ -16,6 +16,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: Dep
+      run: cargo install trunk cargo-leptos
     - name: Build
       run: cargo leptos build --release --verbose
     - name: Run tests
