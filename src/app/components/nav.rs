@@ -4,7 +4,7 @@ use leptos::*;
 pub fn NavBar() -> impl IntoView {
     let onclick_menu = move |_| {
         let menu = web_sys::window().unwrap().document().unwrap().get_element_by_id("mobile-menu").expect("element found");
-        menu.class_list().toggle("hidden");
+        let _ = menu.class_list().toggle("hidden");
     };
     view! {
         <nav class="bg-white dark:bg-gray-900 fixed w-full z-12 top-0 start-0 border-b border-violet-500 dark:border-gray-600 scroll-pt-1">
