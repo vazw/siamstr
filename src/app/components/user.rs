@@ -1,5 +1,7 @@
 use crate::app::core_api::api::*;
 use leptos::*;
+use nostr_sdk::prelude::*;
+use crate::app::nostr::nip07::Nip07Signer;
 
 #[component]
 pub fn UserPage(
@@ -30,7 +32,7 @@ pub fn UserPage(
                         <input
                             type="text"
                             class="text-gray-900 dark:text-gray-100 rounded-lg bg-gray-100 dark:bg-gray-900 border-purple-600 border-2 w-7/12"
-                            prop:value=username.get()
+                            prop:value=move || username.get()
                             on:input=move |ev| {
                                 let val = event_target_value(&ev)
                                     .parse::<String>()
@@ -52,7 +54,7 @@ pub fn UserPage(
                         <input
                             type="text"
                             class="text-gray-900 dark:text-gray-100 rounded-lg bg-gray-100 dark:bg-gray-900 border-purple-600 border-2 w-7/12"
-                            prop:value=lnurl.get()
+                            prop:value=move || lnurl.get()
                             on:input=move |ev| {
                                 let val = event_target_value(&ev)
                                     .parse::<String>()
@@ -69,12 +71,47 @@ pub fn UserPage(
                         on:click=move |_| {
                             let pubk = pub_key.get();
                             spawn_local(async move {
-                                let _ = delete_user(pubk).await;
+                                let signer = Nip07Signer::new()
+                                    .expect("Not Found Nostr Extensions");
+                                let pubkey = signer.get_public_key().await.unwrap();
+                                let event = EventBuilder::new(
+                                        Kind::TextNote,
+                                        "Goodbye siamstr.com",
+                                        [],
+                                    )
+                                    .to_unsigned_event(pubkey);
+                                let signed_event: Event = signer.sign_event(event).await.unwrap();
+                                let respon = delete_user(pubk, signed_event.as_json()).await;
+                                match respon {
+                                    Ok(result) => {
+                                        if result.status == 1 {
+                                            let window = web_sys::window().unwrap();
+                                            let _ = window.alert_with_message("Done").unwrap();
+                                            show_register.set(true);
+                                            lnurl.set("".to_string());
+                                            show_user.set(false);
+                                            use_lnurl.set(false);
+                                        } else {
+                                            let window = web_sys::window().unwrap();
+                                            let _ = window
+                                                .alert_with_message(
+                                                    "Something went wrong :( Please Refresh and Try again",
+                                                )
+                                                .unwrap();
+                                            let _ = window.location().reload();
+                                        }
+                                    }
+                                    Err(_) => {
+                                        let window = web_sys::window().unwrap();
+                                        let _ = window
+                                            .alert_with_message(
+                                                "Something went wrong :( Please Refresh and Try again",
+                                            )
+                                            .unwrap();
+                                        let _ = window.location().reload();
+                                    }
+                                }
                             });
-                            show_register.set(true);
-                            lnurl.set("".to_string());
-                            show_user.set(false);
-                            use_lnurl.set(false);
                         }
                     >
 
@@ -181,11 +218,25 @@ fn ButtonGood(
         let lnurlp = lnurl.get();
         let name = new_username.get();
         spawn_local(async move {
-            let respon = edit_user(name, pubk, lnurlp).await;
+            let signer = Nip07Signer::new().expect("Not Found Nostr Extensions");
+            let pubkey = signer.get_public_key().await.unwrap();
+            let event = EventBuilder::new(Kind::TextNote, "Edit user siamstr.com", []).to_unsigned_event(pubkey);
+            let signed_event: Event = signer.sign_event(event).await.unwrap();
+            let respon = edit_user(name, pubk, lnurlp, signed_event.as_json()).await;
             match respon {
-                Ok(_) => {
-                    let window = web_sys::window().unwrap();
-                    let _ = window.alert_with_message("Done").unwrap();
+                Ok(result) => {
+                    if result.status == 1 {
+                        let window = web_sys::window().unwrap();
+                        let _ = window.alert_with_message("Done").unwrap();
+                    } else {
+                        let window = web_sys::window().unwrap();
+                        let _ = window
+                            .alert_with_message(
+                                "Something went wrong :( Please Refresh and Try again",
+                            )
+                            .unwrap();
+                        let _ = window.location().reload();
+                    }
                 }
                 Err(_) => {
                     let window = web_sys::window().unwrap();
@@ -194,6 +245,7 @@ fn ButtonGood(
                             "Something went wrong :( Please Refresh and Try again",
                         )
                         .unwrap();
+                    let _ = window.location().reload();
                 }
             }
         })
