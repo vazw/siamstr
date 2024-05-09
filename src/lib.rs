@@ -1,4 +1,6 @@
 pub mod app;
+#[macro_use]
+extern crate alloc;
 use cfg_if::cfg_if;
 
 cfg_if! {

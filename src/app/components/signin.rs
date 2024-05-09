@@ -1,14 +1,19 @@
 use crate::app::components::register::*;
 use crate::app::core_api::api::check_npub;
-use crate::app::nostr::nip07::{get_public_key, sign_event};
 use core::time::Duration;
 use leptos::*;
+use nostr_sdk::prelude::*;
+use crate::app::nostr::nip07::Nip07Signer;
 
-async fn nostr_pubkey(_key: String) -> String {
-    let key = get_public_key().await;
-    let key: String = serde_wasm_bindgen::from_value(key).unwrap();
-    key
+
+async fn nostr_sign_event(_key: String) -> Event {
+    let signer = Nip07Signer::new().expect("Not Found Nostr Extensions");
+    let pubkey = signer.get_public_key().await.unwrap();
+    let event = EventBuilder::new(Kind::TextNote, "Login siamstr.com", []).to_unsigned_event(pubkey);
+    let signed_event: Event = signer.sign_event(event).await.unwrap();
+    signed_event
 }
+
 #[component]
 pub fn SignInPage() -> impl IntoView {
     let use_lnurl = create_rw_signal(false);
@@ -18,13 +23,43 @@ pub fn SignInPage() -> impl IntoView {
     let show_register = create_rw_signal(false);
     let pub_key = create_rw_signal("".to_string());
     let username = create_rw_signal("".to_string());
-    let nostr_public_key = create_local_resource(pub_key, nostr_pubkey);
-    let registerd = create_resource(move || pub_key.get(), check_npub);
+    let nostr_public_key = create_local_resource(pub_key, nostr_sign_event);
+    let registerd = create_rw_signal(false);
     let on_click = move |_| {
-        let key = nostr_public_key.clone().get().expect("Not Found Nostr Extensions");
-        pub_key.set(key);
-        show_login.set(false);
-        show_register.set(true);
+        let events = nostr_public_key.clone().get().expect("nostr window error??");
+        if events.verify().is_ok() {
+            let key = events.pubkey.to_string();
+            spawn_local(async move {
+                match check_npub(key.clone().to_owned()).await {
+                    Ok(user) => {
+                        match user.user {
+                            Some(user) => {
+                                pub_key.set(user.pubkey);
+                                username.set(user.name);
+                                lnurl.set(user.lightning_url);
+                                show_login.set(false);
+                                show_register.set(false);
+                                show_user.set(true);
+                            }
+                            None => {
+                                pub_key.set(key);
+                                show_login.set(false);
+                                show_register.set(true);
+                            }
+                        }
+                    }
+                    Err(_e) => {
+                        let window = web_sys::window().unwrap();
+                        let _ = window
+                            .alert_with_message(
+                                "Something went wrong :( Please Refresh and Try again",
+                            )
+                            .unwrap();
+                        let _ = window.location().reload();
+                    },
+                }
+            })
+        }
     };
 
     view! {
@@ -71,46 +106,27 @@ pub fn SignInPage() -> impl IntoView {
                     view! { <p>"เกิดข้อผิดพลาด"</p> }
                 }>
                     {move || {
-                        match registerd.clone().get() {
-                            Some(respon) => {
-                                match respon {
-                                    Ok(user) => {
-                                        match user.user {
-                                            Some(user) => {
-                                                username.set(user.name);
-                                                lnurl.set(user.lightning_url);
-                                                show_register.set(false);
-                                                show_user.set(true);
-                                                view! {
-                                                    <RegisterPage
-                                                        show_register=show_register
-                                                        show_user=show_user
-                                                        pub_key=pub_key
-                                                        username=username
-                                                        use_lnurl=use_lnurl
-                                                        lnurl=lnurl
-                                                    />
-                                                }
-                                            }
-                                            None => {
-                                                view! {
-                                                    <RegisterPage
-                                                        show_register=show_register
-                                                        show_user=show_user
-                                                        pub_key=pub_key
-                                                        username=username
-                                                        use_lnurl=use_lnurl
-                                                        lnurl=lnurl
-                                                    />
-                                                }
-                                            }
-                                        }
-                                    }
-                                    Err(_e) => view! { <Blank/> },
-                                }
+                        if registerd.clone().get() {
+                            view! {
+                                <RegisterPage
+                                    show_register=show_register
+                                    show_user=show_user
+                                    pub_key=pub_key
+                                    username=username
+                                    use_lnurl=use_lnurl
+                                    lnurl=lnurl
+                                />
                             }
-                            _ => {
-                                view! { <Blank/> }
+                        } else {
+                            view! {
+                                <RegisterPage
+                                    show_register=show_register
+                                    show_user=show_user
+                                    pub_key=pub_key
+                                    username=username
+                                    use_lnurl=use_lnurl
+                                    lnurl=lnurl
+                                />
                             }
                         }
                     }}

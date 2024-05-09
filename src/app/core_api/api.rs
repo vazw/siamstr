@@ -1,5 +1,6 @@
 use leptos::*;
 use serde::{Deserialize, Serialize};
+use nostr_sdk::prelude::*;
 
 #[cfg(feature = "ssr")]
 use chrono::Local;
@@ -113,21 +114,28 @@ pub async fn add_user(
     username: String,
     pubkey: String,
     lnurl: String,
+    events: String,
 ) -> Result<BoolRespons, ServerFnError> {
-    let id = Uuid::new_v4().to_string();
-    let time_now = Local::now().to_rfc3339();
-    let mut con = db().await.unwrap();
-    match sqlx::query("INSERT INTO users (id,name,pubkey,lightning_url,created) VALUES (?,?,?,?,?)")
-        .bind(id)
-        .bind(username)
-        .bind(pubkey)
-        .bind(lnurl)
-        .bind(time_now)
-        .execute(&mut con)
-        .await
-    {
-        Ok(_user) => Ok(BoolRespons { status: 1 }),
-        Err(_) => Ok(BoolRespons { status: 0 }),
+    let events : Event = Event::from_json(events).unwrap();
+    if events.verify().is_ok() && &events.pubkey.to_string() == &pubkey {
+        let id = Uuid::new_v4().to_string();
+        let time_now = Local::now().to_rfc3339();
+        let mut con = db().await.unwrap();
+        match sqlx::query("INSERT INTO users (id,name,pubkey,lightning_url,created) VALUES (?,?,?,?,?)")
+            .bind(id)
+            .bind(username)
+            .bind(pubkey)
+            .bind(lnurl)
+            .bind(time_now)
+            .execute(&mut con)
+            .await
+        {
+            Ok(_user) => Ok(BoolRespons { status: 1 }),
+            Err(_) => Ok(BoolRespons { status: 0 }),
+        }
+    } else {
+            Ok(BoolRespons { status: 0 })
+
     }
 }
 
@@ -136,26 +144,39 @@ pub async fn edit_user(
     username: String,
     pubkey: String,
     lnurl: String,
+    events: String,
 ) -> Result<BoolRespons, ServerFnError> {
-    let mut con = db().await.unwrap();
-    let query = format!(
-        "UPDATE users SET name='{username}', lightning_url='{lnurl}' WHERE pubkey='{pubkey}'"
-    );
-    match sqlx::query(&query).execute(&mut con).await {
-        Ok(_user) => Ok(BoolRespons { status: 1 }),
-        Err(_) => Ok(BoolRespons { status: 0 }),
+    let events : Event = Event::from_json(events).unwrap();
+    if events.verify().is_ok() && &events.pubkey.to_string() == &pubkey {
+        let mut con = db().await.unwrap();
+        let query = format!(
+            "UPDATE users SET name='{username}', lightning_url='{lnurl}' WHERE pubkey='{pubkey}'"
+        );
+        match sqlx::query(&query).execute(&mut con).await {
+            Ok(_user) => Ok(BoolRespons { status: 1 }),
+            Err(_) => Ok(BoolRespons { status: 0 }),
+        }
+    } else {
+            Ok(BoolRespons { status: 0 })
+
     }
 }
 
 #[server]
-pub async fn delete_user(pubkey: String) -> Result<BoolRespons, ServerFnError> {
-    let mut con = db().await.unwrap();
-    match sqlx::query("DELETE FROM users WHERE pubkey=(?)")
-        .bind(pubkey)
-        .execute(&mut con)
-        .await
-    {
-        Ok(_user) => Ok(BoolRespons { status: 1 }),
-        Err(_) => Ok(BoolRespons { status: 0 }),
+pub async fn delete_user(pubkey: String, events: String) -> Result<BoolRespons, ServerFnError> {
+    let events : Event = Event::from_json(events).unwrap();
+    if &events.pubkey.to_string() == &pubkey && events.verify().is_ok() {
+        let mut con = db().await.unwrap();
+        match sqlx::query("DELETE FROM users WHERE pubkey=(?)")
+            .bind(pubkey)
+            .execute(&mut con)
+            .await
+        {
+            Ok(_user) => Ok(BoolRespons { status: 1 }),
+            Err(_) => Ok(BoolRespons { status: 0 }),
+        }
+    } else {
+            Ok(BoolRespons { status: 0 })
+
     }
 }

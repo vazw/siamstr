@@ -2,6 +2,8 @@ use core::time::Duration;
 use leptos::*;
 use crate::app::core_api::api::*;
 use crate::app::components::user::UserPage;
+use nostr_sdk::prelude::*;
+use crate::app::nostr::nip07::Nip07Signer;
 
 #[component]
 pub fn RegisterPage(show_register: RwSignal<bool>, show_user: RwSignal<bool>, pub_key: RwSignal<String>, username: RwSignal<String>, use_lnurl: RwSignal<bool>, lnurl: RwSignal<String>) -> impl IntoView {
@@ -127,11 +129,30 @@ fn ButtonGood(show_register: RwSignal<bool>, show_user: RwSignal<bool>, username
         let lnurlp = lnurl.get();
         let consume_pubket = pub_key.get();
         spawn_local(async move {
-            let _ = add_user(name, consume_pubket, lnurlp).await;
+            let signer = Nip07Signer::new().expect("Not Found Nostr Extensions");
+            let pubkey = signer.get_public_key().await.unwrap();
+            let event = EventBuilder::new(Kind::TextNote, "Register siamstr.com", []).to_unsigned_event(pubkey);
+            let signed_event: Event = signer.sign_event(event).await.unwrap();
+            let respon = add_user(name, consume_pubket, lnurlp, signed_event.as_json()).await;
+            match respon {
+                Ok(_) => {
+                    let window = web_sys::window().unwrap();
+                    let _ = window.alert_with_message("Done").unwrap();
+                    show_register.set(false);
+                    pub_key.set(pubk);
+                    show_user.set(true);
+                }
+                Err(_) => {
+                    let window = web_sys::window().unwrap();
+                    let _ = window
+                        .alert_with_message(
+                            "Something went wrong :( Please Refresh and Try again",
+                        )
+                        .unwrap();
+                    let _ = window.location().reload();
+                }
+            }
         });
-        show_register.set(false);
-        pub_key.set(pubk);
-        show_user.set(true);
     };
     view! {
         <div class="text-xs text-red-500 relative">
@@ -286,29 +307,4 @@ pub fn UserGood(username: RwSignal<String>, user_resouce: Resource<String, Resul
         </div>
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
