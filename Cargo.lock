@@ -3405,7 +3405,6 @@ version = "0.1.0"
 dependencies = [
  "actix-files",
  "actix-web",
- "bitcoin",
  "cfg-if",
  "chrono",
  "console_error_panic_hook",

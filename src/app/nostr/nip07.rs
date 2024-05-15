@@ -34,8 +34,8 @@ use alloc::string::{String, ToString};
 use core::fmt;
 use core::str::FromStr;
 
-use bitcoin::secp256k1;
-use bitcoin::secp256k1::schnorr::Signature;
+use nostr_sdk::secp256k1;
+use nostr_sdk::secp256k1::schnorr::Signature;
 use js_sys::{Array, Function, Object, Promise, Reflect};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
