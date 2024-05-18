@@ -135,13 +135,23 @@ fn ButtonGood(show_register: RwSignal<bool>, show_user: RwSignal<bool>, username
             let signed_event: Event = signer.sign_event(event).await.unwrap();
             let respon = add_user(name, consume_pubket, lnurlp, signed_event.as_json()).await;
             match respon {
-                Ok(_) => {
-                    let window = web_sys::window().unwrap();
-                    let _ = window.alert_with_message("Done").unwrap();
-                    show_register.set(false);
-                    pub_key.set(pubk);
-                    show_user.set(true);
-                }
+                Ok(result) => {
+                    if result.status == 1 {
+                        let window = web_sys::window().unwrap();
+                        let _ = window.alert_with_message("Done").unwrap();
+                        show_register.set(false);
+                        pub_key.set(pubk);
+                        show_user.set(true);
+                    } else {
+                        let window = web_sys::window().unwrap();
+                        let _ = window
+                            .alert_with_message(
+                                "Something went wrong :( Please Refresh and Try again",
+                            )
+                            .unwrap();
+                        let _ = window.location().reload();
+                    }
+                },
                 Err(_) => {
                     let window = web_sys::window().unwrap();
                     let _ = window
