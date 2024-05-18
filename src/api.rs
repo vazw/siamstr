@@ -20,6 +20,8 @@ pub struct UsersData {
 #[derive(Debug, Serialize)]
 pub struct NostrUser {
     pub names: Value,
+    pub relays: Value,
+    pub nip46: Value,
 }
 
 pub async fn get_username(
@@ -42,8 +44,12 @@ pub async fn verify(db: web::Data<Pool<Sqlite>>, payload: web::Query<Name>) -> i
     match user {
         Some(user) => {
             let user_respon = format!("{{\"{}\":\"{}\"}}", user.name, user.pubkey);
+            let relay_respon = format!("{{\"{}\":{}}}", user.pubkey, "[\"wss://relay.siamstr.com\", \"wss://relay.notoshi.win\", \"wss://bostr.lecturify.net/?accurate=1\"]");
+            let nip46 = format!("{{\"{}\":{}}}", user.pubkey, "[\"wss://sign.siamstr.com\"]");
             let respon: NostrUser = NostrUser {
                 names: serde_json::from_str(&user_respon).unwrap(),
+                relays: serde_json::from_str(&relay_respon).unwrap(),
+                nip46: serde_json::from_str(&nip46).unwrap(),
             };
             HttpResponse::Ok().json(respon)
         }
