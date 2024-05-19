@@ -17,6 +17,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Dep
         run: cargo install trunk cargo-leptos
+      - name: Dep2
+        run: rustup default nightly
       - name: Build
         run: cargo leptos build --release
       - name: Run tests
