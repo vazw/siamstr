@@ -34,11 +34,7 @@ pub fn RegisterPage(show_register: RwSignal<bool>, show_user: RwSignal<bool>, pu
                                     let val = event_target_value(&ev)
                                         .parse::<String>()
                                         .unwrap_or("".to_string());
-                                    if val.is_empty() {
-                                        username.set(val);
-                                    } else {
-                                        username.set(val);
-                                    }
+                                    username.set(val);
                                 }
                             />
                             "@siamstr.com"
@@ -138,13 +134,13 @@ fn ButtonGood(show_register: RwSignal<bool>, show_user: RwSignal<bool>, username
                 Ok(result) => {
                     if result.status == 1 {
                         let window = web_sys::window().unwrap();
-                        let _ = window.alert_with_message("Done").unwrap();
+                        window.alert_with_message("Done").unwrap();
                         show_register.set(false);
                         pub_key.set(pubk);
                         show_user.set(true);
                     } else {
                         let window = web_sys::window().unwrap();
-                        let _ = window
+                        window
                             .alert_with_message(
                                 "Something went wrong :( Please Refresh and Try again",
                             )
@@ -154,7 +150,7 @@ fn ButtonGood(show_register: RwSignal<bool>, show_user: RwSignal<bool>, username
                 },
                 Err(_) => {
                     let window = web_sys::window().unwrap();
-                    let _ = window
+                    window
                         .alert_with_message(
                             "Something went wrong :( Please Refresh and Try again",
                         )

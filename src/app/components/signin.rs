@@ -9,7 +9,7 @@ use crate::app::nostr::nip07::Nip07Signer;
 async fn nostr_sign_event(_key: String) -> Event {
     let signer = Nip07Signer::new().expect("Not Found Nostr Extensions");
     let pubkey = signer.get_public_key().await.unwrap();
-    let event = EventBuilder::new(Kind::TextNote, "Login siamstr.com", []).to_unsigned_event(pubkey);
+    let event = EventBuilder::new(Kind::Authentication, "Login siamstr.com", []).to_unsigned_event(pubkey);
     let signed_event: Event = signer.sign_event(event).await.unwrap();
     signed_event
 }
@@ -25,35 +25,45 @@ pub fn SignInPage() -> impl IntoView {
     let username = create_rw_signal("".to_string());
     let on_click = move |_| {
         spawn_local(async move {
-            let events = nostr_sign_event(pub_key.get()).await;
-            let key = events.pubkey.to_string();
-            match check_npub(key.clone().to_owned()).await {
-                Ok(user) => {
-                    match user.user {
-                        Some(user) => {
-                            pub_key.set(user.pubkey);
-                            username.set(user.name);
-                            lnurl.set(user.lightning_url);
-                            show_login.set(false);
-                            show_register.set(false);
-                            show_user.set(true);
-                        }
-                        None => {
-                            pub_key.set(key);
-                            show_login.set(false);
-                            show_register.set(true);
+            if Nip07Signer::is_available() {
+                let events = nostr_sign_event(pub_key.get()).await;
+                let key = events.pubkey.to_string();
+                match check_npub(key.clone().to_owned()).await {
+                    Ok(user) => {
+                        match user.user {
+                            Some(user) => {
+                                pub_key.set(user.pubkey);
+                                username.set(user.name);
+                                lnurl.set(user.lightning_url);
+                                show_login.set(false);
+                                show_register.set(false);
+                                show_user.set(true);
+                            }
+                            None => {
+                                pub_key.set(key);
+                                show_login.set(false);
+                                show_register.set(true);
+                            }
                         }
                     }
+                    Err(_e) => {
+                        let window = web_sys::window().unwrap();
+                        window
+                            .alert_with_message(
+                                "Something went wrong :( Please Refresh and Try again",
+                            )
+                            .unwrap();
+                        let _ = window.location().reload();
+                    },
                 }
-                Err(_e) => {
-                    let window = web_sys::window().unwrap();
-                    window
-                        .alert_with_message(
-                            "Something went wrong :( Please Refresh and Try again",
-                        )
-                        .unwrap();
-                    let _ = window.location().reload();
-                },
+            } else {
+                let window = web_sys::window().unwrap();
+                window
+                    .alert_with_message(
+                        "Nostr Extensions Not Found",
+                    )
+                    .unwrap();
+
             }
             })
         };
