@@ -62,7 +62,7 @@ fn HomePage() -> impl IntoView {
             .unwrap();
         let stored_mode = match storage.get_item("darkMode") {
             Ok(dark) => match dark {
-                Some(expr) => expr.parse().unwrap_or(false),
+                Some(expr) => expr.parse().unwrap_or(true),
                 None => false,
             },
             Err(_e) => false,
