@@ -27,7 +27,7 @@ pub fn Footer(dark_mode: RwSignal<bool>) -> impl IntoView {
             let _ = storage.set_item("darkMode", "false");
             dark_mode.set(false);
         } else {
-            let _ = web_dark_mode.set_value("dark");
+            web_dark_mode.set_value("dark");
             let _ = storage.set_item("darkMode", "true");
             dark_mode.set(true);
         };

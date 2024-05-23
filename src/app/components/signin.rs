@@ -23,45 +23,41 @@ pub fn SignInPage() -> impl IntoView {
     let show_register = create_rw_signal(false);
     let pub_key = create_rw_signal("".to_string());
     let username = create_rw_signal("".to_string());
-    let nostr_public_key = create_local_resource(pub_key, nostr_sign_event);
-    let registerd = create_rw_signal(false);
     let on_click = move |_| {
-        let events = nostr_public_key.clone().get().expect("nostr window error??");
-        if events.verify().is_ok() {
+        spawn_local(async move {
+            let events = nostr_sign_event(pub_key.get()).await;
             let key = events.pubkey.to_string();
-            spawn_local(async move {
-                match check_npub(key.clone().to_owned()).await {
-                    Ok(user) => {
-                        match user.user {
-                            Some(user) => {
-                                pub_key.set(user.pubkey);
-                                username.set(user.name);
-                                lnurl.set(user.lightning_url);
-                                show_login.set(false);
-                                show_register.set(false);
-                                show_user.set(true);
-                            }
-                            None => {
-                                pub_key.set(key);
-                                show_login.set(false);
-                                show_register.set(true);
-                            }
+            match check_npub(key.clone().to_owned()).await {
+                Ok(user) => {
+                    match user.user {
+                        Some(user) => {
+                            pub_key.set(user.pubkey);
+                            username.set(user.name);
+                            lnurl.set(user.lightning_url);
+                            show_login.set(false);
+                            show_register.set(false);
+                            show_user.set(true);
+                        }
+                        None => {
+                            pub_key.set(key);
+                            show_login.set(false);
+                            show_register.set(true);
                         }
                     }
-                    Err(_e) => {
-                        let window = web_sys::window().unwrap();
-                        let _ = window
-                            .alert_with_message(
-                                "Something went wrong :( Please Refresh and Try again",
-                            )
-                            .unwrap();
-                        let _ = window.location().reload();
-                    },
                 }
+                Err(_e) => {
+                    let window = web_sys::window().unwrap();
+                    window
+                        .alert_with_message(
+                            "Something went wrong :( Please Refresh and Try again",
+                        )
+                        .unwrap();
+                    let _ = window.location().reload();
+                },
+            }
             })
-        }
-    };
-
+        };
+ 
     view! {
         <div class="block w-9/12 max-h-fit max-w-full bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 text-center justify-items-center p-5">
             <AnimatedShow
@@ -106,28 +102,15 @@ pub fn SignInPage() -> impl IntoView {
                     view! { <p>"เกิดข้อผิดพลาด"</p> }
                 }>
                     {move || {
-                        if registerd.clone().get() {
-                            view! {
-                                <RegisterPage
-                                    show_register=show_register
-                                    show_user=show_user
-                                    pub_key=pub_key
-                                    username=username
-                                    use_lnurl=use_lnurl
-                                    lnurl=lnurl
-                                />
-                            }
-                        } else {
-                            view! {
-                                <RegisterPage
-                                    show_register=show_register
-                                    show_user=show_user
-                                    pub_key=pub_key
-                                    username=username
-                                    use_lnurl=use_lnurl
-                                    lnurl=lnurl
-                                />
-                            }
+                        view! {
+                            <RegisterPage
+                                show_register=show_register
+                                show_user=show_user
+                                pub_key=pub_key
+                                username=username
+                                use_lnurl=use_lnurl
+                                lnurl=lnurl
+                            />
                         }
                     }}
 
@@ -141,15 +124,3 @@ pub fn SignInPage() -> impl IntoView {
 fn Blank() -> impl IntoView {
     view! { <p></p> }
 }
-
-
-
-
-
-
-
-
-
-
-
-
