@@ -67,7 +67,7 @@ pub async fn lnurl(db: web::Data<Pool<Sqlite>>, payload: web::Path<String>) -> i
                 return HttpResponse::NotFound()
                     .json(serde_json::from_str::<Value>("{\"status\":404}").unwrap());
             };
-            let user_domain: Vec<&str> = user.lightning_url.split("@").collect();
+            let user_domain: Vec<&str> = user.lightning_url.split('@').collect();
             if user_domain.len() > 1 {
                 let respon = reqwest::get(format!(
                     "https://{}/.well-known/lnurlp/{}",
@@ -81,23 +81,23 @@ pub async fn lnurl(db: web::Data<Pool<Sqlite>>, payload: web::Path<String>) -> i
                 let json_respon = serde_json::from_str::<Value>(&respon);
                 match json_respon {
                     Ok(expr) => {
-                        return HttpResponse::Ok().json(expr);
+                        HttpResponse::Ok().json(expr)
                     }
                     Err(expr) => {
                         println!("{:#?}", expr);
-                        return HttpResponse::NotFound().json(
+                        HttpResponse::NotFound().json(
                             serde_json::from_str::<Value>(
                                 "{{\"status\":400,\"message\":\"Error\"}",
                             )
                             .unwrap(),
-                        );
+                        )
                     }
                 }
             } else {
-                return HttpResponse::NotFound().json(
+                HttpResponse::NotFound().json(
                     serde_json::from_str::<Value>("{{\"status\":400,\"message\":\"Error\"}")
                         .unwrap(),
-                );
+                )
             }
         }
         None => HttpResponse::NotFound()

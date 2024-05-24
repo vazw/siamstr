@@ -58,7 +58,7 @@ pub struct BoolRespons {
 #[server]
 pub async fn count_users(_count: i32) -> Result<CountsRespon, ServerFnError> {
     let mut con = db().await.unwrap();
-    let query = format!("SELECT COUNT(*) FROM users");
+    let query = "SELECT COUNT(*) FROM users".to_string();
     let result = sqlx::query(&query)
         .fetch_one(&mut con)
         .await;
@@ -117,7 +117,7 @@ pub async fn add_user(
     events: String,
 ) -> Result<BoolRespons, ServerFnError> {
     let events : Event = Event::from_json(events).unwrap();
-    if events.verify().is_ok() && &events.pubkey.to_string() == &pubkey {
+    if events.verify().is_ok() && events.pubkey.to_string() == pubkey {
         let id = Uuid::new_v4().to_string();
         let time_now = Local::now().to_rfc3339();
         let mut con = db().await.unwrap();
@@ -147,7 +147,7 @@ pub async fn edit_user(
     events: String,
 ) -> Result<BoolRespons, ServerFnError> {
     let events : Event = Event::from_json(events).unwrap();
-    if events.verify().is_ok() && &events.pubkey.to_string() == &pubkey {
+    if events.verify().is_ok() && events.pubkey.to_string() == pubkey {
         let mut con = db().await.unwrap();
         let query = format!(
             "UPDATE users SET name='{username}', lightning_url='{lnurl}' WHERE pubkey='{pubkey}'"
@@ -165,7 +165,7 @@ pub async fn edit_user(
 #[server]
 pub async fn delete_user(pubkey: String, events: String) -> Result<BoolRespons, ServerFnError> {
     let events : Event = Event::from_json(events).unwrap();
-    if &events.pubkey.to_string() == &pubkey && events.verify().is_ok() {
+    if events.pubkey.to_string() == pubkey && events.verify().is_ok() {
         let mut con = db().await.unwrap();
         match sqlx::query("DELETE FROM users WHERE pubkey=(?)")
             .bind(pubkey)

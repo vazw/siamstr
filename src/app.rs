@@ -68,7 +68,7 @@ fn HomePage() -> impl IntoView {
             Err(_e) => false,
         };
         if stored_mode {
-            let _ = web_dark_mode.set_value("dark");
+            web_dark_mode.set_value("dark");
             dark_mode.set(true);
         } else {
             let _ = web_dark_mode.remove_1("dark");
