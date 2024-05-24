@@ -24,9 +24,10 @@ pub fn SignInPage() -> impl IntoView {
     let pub_key = create_rw_signal("".to_string());
     let username = create_rw_signal("".to_string());
     let on_click = move |_| {
+        let xpubkey = pub_key.get();
         spawn_local(async move {
             if Nip07Signer::is_available() {
-                let events = nostr_sign_event(pub_key.get()).await;
+                let events = nostr_sign_event(xpubkey).await;
                 let key = events.pubkey.to_string();
                 match check_npub(key.clone().to_owned()).await {
                     Ok(user) => {

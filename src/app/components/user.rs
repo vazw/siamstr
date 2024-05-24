@@ -37,11 +37,7 @@ pub fn UserPage(
                                 let val = event_target_value(&ev)
                                     .parse::<String>()
                                     .unwrap_or("".to_string());
-                                if val.is_empty() {
-                                    new_username.set(val);
-                                } else {
-                                    new_username.set(val);
-                                }
+                                new_username.set(val);
                             }
                         />
 
@@ -86,14 +82,14 @@ pub fn UserPage(
                                     Ok(result) => {
                                         if result.status == 1 {
                                             let window = web_sys::window().unwrap();
-                                            let _ = window.alert_with_message("Done").unwrap();
+                                            window.alert_with_message("Done").unwrap();
                                             show_register.set(true);
                                             lnurl.set("".to_string());
                                             show_user.set(false);
                                             use_lnurl.set(false);
                                         } else {
                                             let window = web_sys::window().unwrap();
-                                            let _ = window
+                                            window
                                                 .alert_with_message(
                                                     "Something went wrong :( Please Refresh and Try again",
                                                 )
@@ -103,7 +99,7 @@ pub fn UserPage(
                                     }
                                     Err(_) => {
                                         let window = web_sys::window().unwrap();
-                                        let _ = window
+                                        window
                                             .alert_with_message(
                                                 "Something went wrong :( Please Refresh and Try again",
                                             )
@@ -172,10 +168,8 @@ pub fn UserGood(
                             .map(|view| {
                                 view.map(|value| {
                                     if new_username.get().is_empty() {
-                                        drop(value);
                                         view! { <p>"ใช้ไม่ได้"</p> }
                                     } else if username.get() == new_username.get() {
-                                        drop(value);
                                         view! { <p class="text-green-500">"ใช้ได้"</p> }
                                     } else {
                                         match value.status {
@@ -227,10 +221,10 @@ fn ButtonGood(
                 Ok(result) => {
                     if result.status == 1 {
                         let window = web_sys::window().unwrap();
-                        let _ = window.alert_with_message("Done").unwrap();
+                        window.alert_with_message("Done").unwrap();
                     } else {
                         let window = web_sys::window().unwrap();
-                        let _ = window
+                        window
                             .alert_with_message(
                                 "Something went wrong :( Please Refresh and Try again",
                             )
@@ -240,7 +234,7 @@ fn ButtonGood(
                 }
                 Err(_) => {
                     let window = web_sys::window().unwrap();
-                    let _ = window
+                    window
                         .alert_with_message(
                             "Something went wrong :( Please Refresh and Try again",
                         )
