@@ -18,7 +18,7 @@ jobs:
       - name: Toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly-2024-02-03
+          toolchain: nightly
           target: wasm32-unknown-unknown
           components: rustfmt, clippy, rust-analyzer
 
