@@ -1,4 +1,4 @@
-FROM leptos-builder-musl AS builder
+FROM sdobedev/leptos-builder-musl:latest AS builder
 
 WORKDIR /work
 
@@ -21,9 +21,7 @@ RUN cargo leptos test
 # after successful tests, build it
 RUN cargo leptos build --release
 
-########################################
-########################################
-########################################
+##
 
 FROM debian:bookworm-slim
 WORKDIR /app
