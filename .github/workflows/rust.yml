@@ -15,9 +15,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Toolchain
-        run: rustup install nightly && rustup default nightly && rustup target add wasm32-unknown-unknown
-      - name: Dep
-        run: cargo install cargo-leptos
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
+
+      - name: Run cargo check
+        uses: actions-rs/cargo@v1
+        with:
+          command: install cargo-leptos
       - name: Build
         run: RUSTFLAGS=--cfg=web_sys_unstable_apis cargo leptos build --release
