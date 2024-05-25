@@ -58,8 +58,8 @@ pub struct BoolRespons {
 #[server]
 pub async fn count_users(_count: i32) -> Result<CountsRespon, ServerFnError> {
     let mut con = db().await.unwrap();
-    let query = "SELECT COUNT(*) FROM users".to_string();
-    let result = sqlx::query(&query)
+    let query = "SELECT COUNT(*) FROM users";
+    let result = sqlx::query(query)
         .fetch_one(&mut con)
         .await;
     match result {
@@ -98,6 +98,7 @@ pub async fn check_username(username: String) -> Result<BoolRespons, ServerFnErr
     if username.is_empty() {
         Ok(BoolRespons { status: 0 })
     } else {
+        let username = username.to_lowercase();
         let query = format!("SELECT * FROM users WHERE name='{username}'");
         let result = sqlx::query_as::<_, UsersData>(&query)
             .fetch_one(&mut con)
@@ -120,10 +121,11 @@ pub async fn add_user(
     if events.verify().is_ok() && events.pubkey.to_string() == pubkey {
         let id = Uuid::new_v4().to_string();
         let time_now = Local::now().to_rfc3339();
+        let lowercase_name = username.to_lowercase();
         let mut con = db().await.unwrap();
         match sqlx::query("INSERT INTO users (id,name,pubkey,lightning_url,created) VALUES (?,?,?,?,?)")
             .bind(id)
-            .bind(username)
+            .bind(lowercase_name)
             .bind(pubkey)
             .bind(lnurl)
             .bind(time_now)
@@ -149,6 +151,7 @@ pub async fn edit_user(
     let events : Event = Event::from_json(events).unwrap();
     if events.verify().is_ok() && events.pubkey.to_string() == pubkey {
         let mut con = db().await.unwrap();
+        let username = username.to_lowercase();
         let query = format!(
             "UPDATE users SET name='{username}', lightning_url='{lnurl}' WHERE pubkey='{pubkey}'"
         );

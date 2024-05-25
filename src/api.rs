@@ -28,7 +28,8 @@ pub async fn get_username(
     db: web::Data<Pool<Sqlite>>,
     name: &str,
 ) -> std::io::Result<Option<UsersData>> {
-    let query = format!("SELECT * FROM users WHERE name='{name}'");
+    let lowercase_name = name.to_lowercase();
+    let query = format!("SELECT * FROM users WHERE name='{lowercase_name}'");
     match sqlx::query_as::<_, UsersData>(&query)
         .fetch_one(&**db)
         .await
@@ -44,7 +45,7 @@ pub async fn verify(db: web::Data<Pool<Sqlite>>, payload: web::Query<Name>) -> i
     match user {
         Some(user) => {
             let user_respon = format!("{{\"{}\":\"{}\"}}", user.name, user.pubkey);
-            let relay_respon = format!("{{\"{}\":{}}}", user.pubkey, "[\"wss://relay.siamstr.com\", \"wss://relay.notoshi.win\", \"wss://bostr.lecturify.net/?accurate=1\"]");
+            let relay_respon = format!("{{\"{}\":{}}}", user.pubkey, "[\"wss://relay.siamstr.com\", \"wss://relay.notoshi.win\", \"wss://bostr.lecturify.net\"]");
             let nip46 = format!("{{\"{}\":{}}}", user.pubkey, "[\"wss://sign.siamstr.com\"]");
             let respon: NostrUser = NostrUser {
                 names: serde_json::from_str(&user_respon).unwrap(),
