@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Toolchain leptos
+      - name: Toolchain cargo
         uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
@@ -34,5 +34,10 @@ jobs:
           override: true
           target: wasm32-unknown-unknown
           components: rustfmt, clippy, rust-analyzer
+      - name: Dep leptos
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: -f wasm-bindgen-cli --version 0.2.89
       - name: Build
         run: RUSTFLAGS=--cfg=web_sys_unstable_apis cargo leptos build --release
