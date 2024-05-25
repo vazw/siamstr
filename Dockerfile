@@ -10,7 +10,8 @@ RUN . "$HOME/.cargo/env" && cargo install cargo-leptos
 COPY . .
 RUN mkdir -p target/site
 # after successful tests, build it
-RUN . "$HOME/.cargo/env" && cargo leptos build --release
+RUN . "$HOME/.cargo/env" && cargo install -f wasm-bindgen-cli --version 0.2.89
+RUN . "$HOME/.cargo/env" && RUSTFLAGS=--cfg=web_sys_unstable_apis cargo leptos build --release
 
 ##
 
