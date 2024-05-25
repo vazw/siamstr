@@ -26,6 +26,6 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: install
-          args: cargo-install cargo-leptos
+          args: cargo-leptos
       - name: Build
         run: RUSTFLAGS=--cfg=web_sys_unstable_apis cargo leptos build --release
