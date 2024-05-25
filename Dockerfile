@@ -38,7 +38,6 @@ USER 10001
 
 COPY --chown=10001:10001 --from=builder /work/target/site/ ./site/
 COPY --chown=10001:10001 --from=builder /work/target/server/release/siamstr .
-COPY ./database.db .
 
 # must match your final server executable name
 ENTRYPOINT ["/app/siamstr"]
