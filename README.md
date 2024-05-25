@@ -5,7 +5,7 @@
 
 # Siamstr Nostr Address Provider
 
-## Running project
+## Running project [![Rust](https://github.com/vazw/siamstr/actions/workflows/rust.yml/badge.svg)](https://github.com/vazw/siamstr/actions/workflows/rust.yml) [![Docker Image CI](https://github.com/vazw/siamstr/actions/workflows/docker-image.yml/badge.svg)](https://github.com/vazw/siamstr/actions/workflows/docker-image.yml)
 
 ### Rust Toolchain
 
