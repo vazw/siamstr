@@ -1,6 +1,6 @@
 FROM node AS style
 WORKDIR /node
-COPY ./input.css .
+COPY . .
 
 RUN npm install -D tailwindcss
 RUN mkdir -p style
