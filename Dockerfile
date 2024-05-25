@@ -2,16 +2,15 @@ FROM debian:bookworm-slim AS builder
 
 WORKDIR /work
 
-RUN apt-get update && apt-get install -y clang gcc cc
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+RUN apt-get update && apt-get install -y clang gcc curl 
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rust.sh && sh rust.sh -y
+RUN . "$HOME/.cargo/env" && rustup toolchain install nightly && rustup default nightly
+RUN . "$HOME/.cargo/env" && rustup target add wasm32-unknown-unknown
+RUN . "$HOME/.cargo/env" && cargo install cargo-leptos
 COPY . .
 RUN mkdir -p target/site
 # after successful tests, build it
-RUN rustup toolchain install nightly-2024-02-03
-RUN rustup default nightly-2024-02-03
-RUN rustup target add wasm32-unknown-unknown
-RUN cargo install cargo-leptos
-RUN cargo leptos build --release
+RUN . "$HOME/.cargo/env" && cargo leptos build --release
 
 ##
 
