@@ -34,10 +34,10 @@ jobs:
           override: true
           target: wasm32-unknown-unknown
           components: rustfmt, clippy, rust-analyzer
-      - name: Dep leptos
+      - name: Dep wasm
         uses: actions-rs/cargo@v1
         with:
-          command: install
-          args: -f wasm-bindgen-cli --version 0.2.89
+          command: update
+          args: -p wasm-bindgen --precise 0.2.92
       - name: Build
         run: RUSTFLAGS=--cfg=web_sys_unstable_apis cargo leptos build --release
