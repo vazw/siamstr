@@ -1,6 +1,6 @@
 [package]
 name = "siamstr"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 
 [lib]
@@ -12,10 +12,10 @@ actix-web = { version = "4", optional = true, features = ["macros"] }
 console_error_panic_hook = "0.1"
 cfg-if = "1"
 http = { version = "0.2", optional = true }
-leptos = { version = "0.5.2", features = ["nightly"] }
-leptos_meta = { version = "0.5.2", features = ["nightly"] }
-leptos_actix = { version = "0.5.2", optional = true }
-leptos_router = { version = "0.5.2", features = ["nightly"] }
+leptos = { version = "0.6", features = ["nightly"] }
+leptos_meta = { version = "0.6", features = ["nightly"] }
+leptos_actix = { version = "0.6", optional = true }
+leptos_router = { version = "0.6", features = ["nightly"] }
 sqlx = { version = "0.7", features = [ "runtime-tokio-rustls", "sqlite" ], optional = true}
 wasm-bindgen = "0.2.89"
 serde = { version = "1.0.188", features = ["derive"] }
