@@ -35,7 +35,7 @@ pub fn Donate() -> impl IntoView {
             <label class="block my-1 text-sm font-medium text-gray-900 dark:text-white">
                 - หรือ -
             </label>
-            <div class="flex flex-row w-1/2 xs:w-full sm:w-full md:w-1/2">
+            <div class="flex flex-row w-full lg:w-1/2 sm:w-full md:w-full 2xl:w-1/2 xl:w-1/2">
                 <div class="w-full">
                     <input
                         type="text"
