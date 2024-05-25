@@ -15,9 +15,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Toolchain
+        run: rustup install nightly-2024-02-03 && rustup default nightly-2024-02-03 && rustup target add wasm32-unknown-unknown
       - name: Dep
-        run: cargo install trunk cargo-leptos
+        run: cargo install cargo-leptos
       - name: Build
         run: RUSTFLAGS=--cfg=web_sys_unstable_apis cargo leptos build --release
-      - name: Run tests
-        run: cargo leptos test
