@@ -7,6 +7,7 @@ WORKDIR /work
 #
 # !!! EVEN MORE IMPORTANT !!!
 # If you have any secrets in a `.env` file or something, add this to `.dockerignore` too!
+RUN apt-get update && apt-get install -y clang gcc
 COPY . .
 
 # this small workaround fixes a chicken and egg problem with `rust_embed` in this template
