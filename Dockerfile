@@ -1,20 +1,16 @@
-FROM sdobedev/leptos-builder-musl:latest AS builder
+FROM debian:bookworm-slim AS builder
 
 WORKDIR /work
 
-# IMPORTANT: have a `.dockerignore` file and exclude at least your `target`
-# directory to not copy huge amounts of data into the docker context
-#
-# !!! EVEN MORE IMPORTANT !!!
-# If you have any secrets in a `.env` file or something, add this to `.dockerignore` too!
-RUN apt-get update && apt-get install -y clang gcc
+RUN apt-get update && apt-get install -y clang gcc cc
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 COPY . .
-
-# this small workaround fixes a chicken and egg problem with `rust_embed` in this template
-# so we can check clippy before actually compiling
 RUN mkdir -p target/site
-
 # after successful tests, build it
+RUN rustup toolchain install nightly-2024-02-03
+RUN rustup default nightly-2024-02-03
+RUN rustup target add wasm32-unknown-unknown
+RUN cargo install cargo-leptos
 RUN cargo leptos build --release
 
 ##
