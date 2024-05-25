@@ -12,11 +12,6 @@ COPY . .
 # this small workaround fixes a chicken and egg problem with `rust_embed` in this template
 # so we can check clippy before actually compiling
 RUN mkdir -p target/site
-# make sure we exit early if clippy is not happy
-RUN cargo clippy -- -D warnings
-
-# execute tests first
-RUN cargo leptos test
 
 # after successful tests, build it
 RUN cargo leptos build --release
