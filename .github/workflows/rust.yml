@@ -27,5 +27,7 @@ jobs:
         with:
           command: install
           args: cargo-leptos
+      - name: Wasm
+        run: rustup target add wasm32-unknown-unknown
       - name: Build
         run: RUSTFLAGS=--cfg=web_sys_unstable_apis cargo leptos build --release
