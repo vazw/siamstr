@@ -15,19 +15,24 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Toolchain
+      - name: Toolchain leptos
         uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
           override: true
           components: rustfmt, clippy, rust-analyzer
 
-      - name: Dep
+      - name: Dep leptos
         uses: actions-rs/cargo@v1
         with:
           command: install
           args: cargo-leptos
-      - name: Wasm
-        run: rustup target add wasm32-unknown-unknown
+      - name: Toolchain leptos
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly-2024-02-03
+          override: true
+          target: wasm32-unknown-unknown
+          components: rustfmt, clippy, rust-analyzer
       - name: Build
         run: RUSTFLAGS=--cfg=web_sys_unstable_apis cargo leptos build --release
