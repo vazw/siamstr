@@ -1,0 +1,36 @@
+name: Rust
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain cargo
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy, rust-analyzer
+
+      - name: Dep leptos
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: cargo-leptos
+      - name: update tailwindcss
+        uses: ZoeyVid/tailwindcss-update@main
+        with:
+          input: ./input.css
+          output: ./style/output.css
+      - name: Build
+        run: RUSTFLAGS=--cfg=web_sys_unstable_apis cargo leptos build --release
