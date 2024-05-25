@@ -15,14 +15,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Install latest nightly
+      - name: Toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly
-          override: true
-          components: rustfmt, clippy
+          toolchain: nightly-2024-02-03
+          target: wasm32-unknown-unknown
+          components: rustfmt, clippy, rust-analyzer
 
-      - name: Run cargo check
+      - name: Dep
         uses: actions-rs/cargo@v1
         with:
           command: install
