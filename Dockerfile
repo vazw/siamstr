@@ -35,7 +35,7 @@ ENV LEPTOS_RELOAD_PORT="3001"
 USER 10001
 
 COPY --chown=10001:10001 --from=builder /work/target/site/ ./site/
-COPY --chown=10001:10001 --from=builder /work/target/server/release/siamstr .
+COPY --chown=10001:10001 --from=builder /work/target/release/siamstr .
 
 # must match your final server executable name
 ENTRYPOINT ["/app/siamstr"]
