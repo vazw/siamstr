@@ -141,6 +141,14 @@ pub async fn add_user(
     pubkey: String,
     lnurl: String,
 ) -> Result<BoolRespons, ServerFnError> {
+    let mut hex_npub = String::new();
+    if pubkey.starts_with("npub") {
+        if let Ok(keys) = PublicKey::from_str(&pubkey) {
+            hex_npub.clone_from(&keys.to_hex());
+        }
+    } else {
+        hex_npub.clone_from(&pubkey);
+    }
     let id = Uuid::new_v4().to_string();
     let time_now = Local::now().to_rfc3339();
     let lowercase_name = username.to_lowercase();
@@ -151,7 +159,7 @@ pub async fn add_user(
         match sqlx::query("INSERT INTO users (id,name,pubkey,lightning_url,created) VALUES (?,?,?,?,?)")
             .bind(id)
             .bind(lowercase_name)
-            .bind(pubkey)
+            .bind(hex_npub)
             .bind(lnurl)
             .bind(time_now)
             .execute(&**con)
