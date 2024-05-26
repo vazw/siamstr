@@ -1,3 +1,4 @@
+use std::str::FromStr;
 use leptos::*;
 use serde::{Deserialize, Serialize};
 use nostr_sdk::prelude::*;
@@ -7,7 +8,7 @@ use chrono::Local;
 #[cfg(feature = "ssr")]
 use uuid::Uuid;
 #[cfg(feature = "ssr")]
-pub const DB_URL: &str = "sqlite://database.db";
+pub const DB_URL: &str = "sqlite://db/database.db";
 #[cfg(feature = "ssr")]
 use sqlx::{Connection, FromRow, SqliteConnection, Row};
 #[cfg(feature = "ssr")]
@@ -72,7 +73,15 @@ pub async fn count_users(_count: i32) -> Result<CountsRespon, ServerFnError> {
 }
 
 #[server]
-pub async fn check_npub(hex_npub: String) -> Result<UserRespons, ServerFnError> {
+pub async fn check_npub(public_key: String) -> Result<UserRespons, ServerFnError> {
+    let mut hex_npub = String::new();
+    if public_key.starts_with("npub") {
+        if let Ok(keys) = PublicKey::from_str(&public_key) {
+            hex_npub.clone_from(&keys.to_hex());
+        }
+    } else {
+        hex_npub.clone_from(&public_key);
+    }
     let mut con = db().await.unwrap();
     let query = format!("SELECT * FROM users WHERE pubkey='{hex_npub}'");
     let result = sqlx::query_as::<_, UsersData>(&query)
@@ -115,29 +124,22 @@ pub async fn add_user(
     username: String,
     pubkey: String,
     lnurl: String,
-    events: String,
 ) -> Result<BoolRespons, ServerFnError> {
-    let events : Event = Event::from_json(events).unwrap();
-    if events.verify().is_ok() && events.pubkey.to_string() == pubkey {
-        let id = Uuid::new_v4().to_string();
-        let time_now = Local::now().to_rfc3339();
-        let lowercase_name = username.to_lowercase();
-        let mut con = db().await.unwrap();
-        match sqlx::query("INSERT INTO users (id,name,pubkey,lightning_url,created) VALUES (?,?,?,?,?)")
-            .bind(id)
-            .bind(lowercase_name)
-            .bind(pubkey)
-            .bind(lnurl)
-            .bind(time_now)
-            .execute(&mut con)
-            .await
-        {
-            Ok(_user) => Ok(BoolRespons { status: 1 }),
-            Err(_) => Ok(BoolRespons { status: 0 }),
-        }
-    } else {
-            Ok(BoolRespons { status: 0 })
-
+    let id = Uuid::new_v4().to_string();
+    let time_now = Local::now().to_rfc3339();
+    let lowercase_name = username.to_lowercase();
+    let mut con = db().await.unwrap();
+    match sqlx::query("INSERT INTO users (id,name,pubkey,lightning_url,created) VALUES (?,?,?,?,?)")
+        .bind(id)
+        .bind(lowercase_name)
+        .bind(pubkey)
+        .bind(lnurl)
+        .bind(time_now)
+        .execute(&mut con)
+        .await
+    {
+        Ok(_user) => Ok(BoolRespons { status: 1 }),
+        Err(_) => Ok(BoolRespons { status: 0 }),
     }
 }
 
