@@ -6,13 +6,11 @@ use nostr_sdk::prelude::*;
 #[cfg(feature = "ssr")]
 use chrono::Local;
 #[cfg(feature = "ssr")]
-use sqlx::{Pool, Sqlite};
-#[cfg(feature = "ssr")]
 use uuid::Uuid;
 #[cfg(feature = "ssr")]
 pub const DB_URL: &str = "sqlite://db/database.db";
 #[cfg(feature = "ssr")]
-use sqlx::{Connection, FromRow, SqliteConnection, Row};
+use sqlx::{FromRow, Row, Pool, Sqlite};
 
 #[cfg(feature = "ssr")]
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize, PartialEq, Eq)]
@@ -59,10 +57,10 @@ pub async fn count_users(_count: i32) -> Result<CountsRespon, ServerFnError> {
     if leptos::leptos_dom::is_server() {
         use actix_web::web::Data;
         use leptos_actix::*;
-        let con: Data<Pool<Sqlite>> = extract().await?;
+        let con = extract::<Data<Pool<Sqlite>>>().await?;
         let query = "SELECT COUNT(*) FROM users";
         let result = sqlx::query(query)
-            .fetch_one(&**con)
+            .fetch_one(&**con.clone())
             .await;
         match result {
             Ok(user) => {
@@ -89,10 +87,10 @@ pub async fn check_npub(public_key: String) -> Result<UserRespons, ServerFnError
     if leptos::leptos_dom::is_server() {
         use actix_web::web::Data;
         use leptos_actix::*;
-        let con: Data<Pool<Sqlite>> = extract().await?;
+        let con = extract::<Data<Pool<Sqlite>>>().await?;
         let query = format!("SELECT * FROM users WHERE pubkey='{hex_npub}'");
         let result = sqlx::query_as::<_, UsersData>(&query)
-            .fetch_one(&**con)
+            .fetch_one(&**con.clone())
             .await;
         match result {
             Ok(user) => Ok(UserRespons {
@@ -119,11 +117,11 @@ pub async fn check_username(username: String) -> Result<BoolRespons, ServerFnErr
         if username.is_empty() {
             Ok(BoolRespons { status: 0 })
         } else {
-            let con: Data<Pool<Sqlite>> = extract().await?;
+            let con = extract::<Data<Pool<Sqlite>>>().await?;
             let username = username.to_lowercase();
             let query = format!("SELECT * FROM users WHERE name='{username}'");
             let result = sqlx::query_as::<_, UsersData>(&query)
-                .fetch_one(&**con)
+                .fetch_one(&**con.clone())
                 .await;
             match result {
                 Ok(_user) => Ok(BoolRespons { status: 1 }),
@@ -155,14 +153,14 @@ pub async fn add_user(
     if leptos::leptos_dom::is_server() {
         use actix_web::web::Data;
         use leptos_actix::*;
-        let con: Data<Pool<Sqlite>> = extract().await?;
+        let con = extract::<Data<Pool<Sqlite>>>().await?;
         match sqlx::query("INSERT INTO users (id,name,pubkey,lightning_url,created) VALUES (?,?,?,?,?)")
             .bind(id)
             .bind(lowercase_name)
             .bind(hex_npub)
             .bind(lnurl)
             .bind(time_now)
-            .execute(&**con)
+            .execute(&**con.clone())
             .await
         {
             Ok(_user) => Ok(BoolRespons { status: 1 }),
@@ -185,12 +183,12 @@ pub async fn edit_user(
         if leptos::leptos_dom::is_server() {
             use actix_web::web::Data;
             use leptos_actix::*;
-            let con: Data<Pool<Sqlite>> = extract().await?;
+            let con = extract::<Data<Pool<Sqlite>>>().await?;
             let username = username.to_lowercase();
             let query = format!(
                 "UPDATE users SET name='{username}', lightning_url='{lnurl}' WHERE pubkey='{pubkey}'"
             );
-            match sqlx::query(&query).execute(&**con).await {
+            match sqlx::query(&query).execute(&**con.clone()).await {
                 Ok(_user) => Ok(BoolRespons { status: 1 }),
                 Err(_) => Ok(BoolRespons { status: 0 }),
             }
@@ -210,10 +208,10 @@ pub async fn delete_user(pubkey: String, events: String) -> Result<BoolRespons, 
         if leptos::leptos_dom::is_server() {
             use actix_web::web::Data;
             use leptos_actix::*;
-            let con: Data<Pool<Sqlite>> = extract().await?;
+            let con = extract::<Data<Pool<Sqlite>>>().await?;
             match sqlx::query("DELETE FROM users WHERE pubkey=(?)")
                 .bind(pubkey)
-                .execute(&**con)
+                .execute(&**con.clone())
                 .await
             {
                 Ok(_user) => Ok(BoolRespons { status: 1 }),

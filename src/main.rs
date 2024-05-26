@@ -4,6 +4,7 @@ pub mod api;
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     use std::fs;
+    use std::time::Duration;
 
     use actix_files::Files;
     use actix_web::*;
@@ -91,7 +92,11 @@ async fn main() -> std::io::Result<()> {
     } else {
         println!("Database already exists");
     }
-    let db = SqlitePoolOptions::new().connect_lazy(DB_URL).unwrap();
+    let db = SqlitePoolOptions::new()
+        .max_connections(10)
+        .idle_timeout(Duration::from_secs(10))
+        .max_lifetime(Duration::from_secs(30))
+        .connect_lazy(DB_URL).unwrap();
     create_data_table(db.clone()).await;
     import_json(db.clone()).await;
     let conf = get_configuration(None).await.unwrap();

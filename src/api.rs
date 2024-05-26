@@ -30,7 +30,7 @@ pub async fn get_username(
 ) -> std::io::Result<Option<UsersData>> {
     let query = format!("SELECT * FROM users WHERE name='{name}'");
     match sqlx::query_as::<_, UsersData>(&query)
-        .fetch_one(&**db)
+        .fetch_one(&**db.clone())
         .await
     {
         Ok(user) => Ok(Some(user)),
