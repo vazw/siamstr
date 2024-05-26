@@ -1,5 +1,5 @@
 use crate::app::components::register::*;
-use crate::app::core_api::api::check_npub;
+use crate::app::core_api::api::{check_npub,UserRespons};
 use core::time::Duration;
 use leptos::*;
 use nostr_sdk::prelude::*;
@@ -23,6 +23,7 @@ pub fn SignInPage() -> impl IntoView {
     let show_register = create_rw_signal(false);
     let pub_key = create_rw_signal("".to_string());
     let username = create_rw_signal("".to_string());
+    let npub_check_res = create_resource(move || pub_key.get(),check_npub);
     let on_click = move |_| {
         let xpubkey = pub_key.get();
         spawn_local(async move {
@@ -66,8 +67,8 @@ pub fn SignInPage() -> impl IntoView {
                     .unwrap();
 
             }
-            })
-        };
+        })
+    };
  
     view! {
         <div class="block w-9/12 max-h-fit max-w-full bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 text-center justify-items-center p-5">
@@ -84,6 +85,34 @@ pub fn SignInPage() -> impl IntoView {
                 <button class="btn btn--primary" on:click=on_click>
                     "Login"
                 </button>
+                <br/>
+                <label class="mt-6 text-sm leading-3 text-gray-900 dark:text-gray-300 break-words sm:text-xs md:text-lg">
+                    "- หรือ -"
+                </label>
+                <br/>
+                <label class="text-sm leading-3 text-gray-900 dark:text-gray-300 sm:text-xs md:text-lg">
+                    "กรอก Nostr Public Key(npub)"
+                </label>
+                <br/>
+                <input
+                    type="text"
+                    class="text-gray-900 dark:text-gray-100 rounded-lg bg-gray-100 dark:bg-gray-900 border-purple-600 border-2 w-7/12"
+                    prop:placeholder="Nostr Public Key / npub"
+                    on:input=move |ev| {
+                        let val = event_target_value(&ev)
+                            .parse::<String>()
+                            .unwrap_or("".to_string());
+                        pub_key.set(val);
+                    }
+                />
+
+                <br/>
+                <ButtonGood
+                    show_register=show_register
+                    show_login=show_login
+                    pub_key=pub_key
+                    user_resouce=npub_check_res
+                />
             </AnimatedShow>
             <Suspense fallback=move || {
                 view! {
@@ -122,6 +151,91 @@ pub fn SignInPage() -> impl IntoView {
                                 use_lnurl=use_lnurl
                                 lnurl=lnurl
                             />
+                        }
+                    }}
+
+                </ErrorBoundary>
+            </Suspense>
+        </div>
+    }
+}
+
+#[component]
+fn ButtonGood(show_register: RwSignal<bool>, show_login: RwSignal<bool>, pub_key: RwSignal<String>,user_resouce: Resource<String, Result<UserRespons, ServerFnError>>) -> impl IntoView {
+    let on_click_regis = move |_| {
+        show_login.set(false);
+        show_register.set(true);
+    };
+    view! {
+        <div class="text-xs text-red-500 relative">
+            <Suspense fallback=move || {
+                view! {
+                    <div role="status">
+                        <svg
+                            aria-hidden="true"
+                            class="inline w-4 h-4 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
+                            viewBox="0 0 100 101"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                                fill="currentColor"
+                            ></path>
+                            <path
+                                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                                fill="currentFill"
+                            ></path>
+                        </svg>
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                }
+            }>
+                // handles the error from the resource
+                <ErrorBoundary fallback=|_| {
+                    view! { <p>"เกิดข้อผิดพลาด"</p> }
+                }>
+                    {move || {
+                        if pub_key.get().is_empty() {
+                            view! {
+                                <button class="btn btn--secondary cursor-not-allowed" disabled>
+                                    "สมัครรับ Nip-05"
+                                </button>
+                            }
+                        } else {
+                            match user_resouce.clone().get().expect("server respon") {
+                                Ok(value) => {
+                                    match value.user {
+                                        Some(_) => {
+                                            view! {
+                                                <button
+                                                    class="btn btn--secondary cursor-not-allowed"
+                                                    disabled
+                                                >
+                                                    "Public Key นี้ได้สมัครไว้แล้ว"
+                                                </button>
+                                            }
+                                        }
+                                        None => {
+                                            view! {
+                                                <button class="btn btn--primary" on:click=on_click_regis>
+                                                    "สมัครรับ Nip-05"
+                                                </button>
+                                            }
+                                        }
+                                    }
+                                }
+                                Err(_) => {
+                                    view! {
+                                        <button
+                                            class="btn btn--secondary cursor-not-allowed"
+                                            disabled
+                                        >
+                                            "สมัครรับ Nip-05"
+                                        </button>
+                                    }
+                                }
+                            }
                         }
                     }}
 
