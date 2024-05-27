@@ -4,7 +4,7 @@ use core::time::Duration;
 use leptos::*;
 use nostr_sdk::prelude::*;
 use crate::app::nostr::nip07::Nip07Signer;
-
+use std::str::FromStr;
 
 async fn nostr_sign_event(_key: String) -> Event {
     let signer = Nip07Signer::new().expect("Not Found Nostr Extensions");
@@ -163,11 +163,18 @@ pub fn SignInPage() -> impl IntoView {
 #[component]
 fn ButtonGood(show_register: RwSignal<bool>, show_login: RwSignal<bool>, pub_key: RwSignal<String>,user_resouce: Resource<String, Result<UserRespons, ServerFnError>>) -> impl IntoView {
     let on_click_regis = move |_| {
-        show_login.set(false);
-        show_register.set(true);
+        let public_key = pub_key.get();
+        let keys = PublicKey::from_str(&public_key);
+        match keys {
+          Ok(pubkey) => {pub_key.set(pubkey.to_hex());
+            show_login.set(false);
+            show_register.set(true);
+          },
+          Err(_) => { window().alert_with_message("Public Key ไม่ถูกต้อง").expect("alert!");}, 
+        };
     };
     view! {
-        <div class="text-xs text-red-500 relative">
+        <div class="text-xs text-red-500">
             <Suspense fallback=move || {
                 view! {
                     <div role="status">
