@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use leptos::*;
 use serde::{Deserialize, Serialize};
 use nostr_sdk::prelude::*;
@@ -76,6 +75,7 @@ pub async fn count_users(_count: i32) -> Result<CountsRespon, ServerFnError> {
 
 #[server]
 pub async fn check_npub(public_key: String) -> Result<UserRespons, ServerFnError> {
+    use std::str::FromStr;
     let mut hex_npub = String::new();
     if public_key.starts_with("npub") {
         if let Ok(keys) = PublicKey::from_str(&public_key) {
@@ -139,6 +139,7 @@ pub async fn add_user(
     pubkey: String,
     lnurl: String,
 ) -> Result<BoolRespons, ServerFnError> {
+    use std::str::FromStr;
     let mut hex_npub = String::new();
     if pubkey.starts_with("npub") {
         if let Ok(keys) = PublicKey::from_str(&pubkey) {
