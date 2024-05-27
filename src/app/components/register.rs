@@ -239,6 +239,7 @@ fn ButtonGood(show_register: RwSignal<bool>, show_user: RwSignal<bool>, username
         </div>
     }
 }
+
 #[component]
 pub fn UserGood(username: RwSignal<String>, user_resouce: Resource<String, Result<BoolRespons, ServerFnError>>) -> impl IntoView {
     view! {
