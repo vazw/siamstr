@@ -35,15 +35,13 @@ pub fn Donate() -> impl IntoView {
             <label class="block my-1 text-sm font-medium text-gray-900 dark:text-white">
                 - หรือ -
             </label>
-            <div class="flex flex-row w-full lg:w-1/2 sm:w-full md:w-full 2xl:w-1/2 xl:w-1/2">
-                <div class="w-full">
+            <div class="flex flex-col sm:flex-col md:flex-row lg:flex-row xl:flex-row 2xl:flex-row w-full lg:w-3/4 sm:w-full md:w-full 2xl:w-1/2 xl:w-1/2 text-center items-center justify-items-center p-5 place-content-center content-center">
+                <div class="w-9/12 flex flex-row">
                     <input
                         type="text"
                         class="text-xs sm:text-xs md:text-sm bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 text-center"
                         prop:value=LNURL
                     />
-                </div>
-                <div>
                     <button
                         class="btn btn-accent w-fit text-xs sm:text-xs md:text-sm text-black dark:text-white"
                         on:click=move |_| {
@@ -57,6 +55,16 @@ pub fn Donate() -> impl IntoView {
 
                         "📋"
                     </button>
+                </div>
+                <div>
+                    <button
+                        class="btn btn-accent w-full text-xs sm:text-xs md:text-sm text-black dark:text-white"
+                        data-npub="npub1tr66yvqghfdgwv9yxhmg7xx6pvgvu5uvdc42tgdhsys8vvzdt8msev06fl"
+                        data-relays="wss://relay.damus.io,wss://relay.siamstr.com,wss://relay.notoshi.win,wss://relay.nostr.band"
+                    >
+                      "Zapเลย⚡️"
+                    </button>
+                    <script src="https://cdn.jsdelivr.net/npm/nostr-zap@0.22.0"></script>
                 </div>
             </div>
         </div>
