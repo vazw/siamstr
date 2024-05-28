@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use actix_web::{get, web, HttpResponse, Responder};
+use futures::join;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sqlx::{FromRow, Pool, Sqlite};
@@ -75,36 +76,38 @@ pub async fn verify(db: web::Data<Pool<Sqlite>>, payload: web::Query<Name>) -> i
             .json(serde_json::from_str::<Value>("{\"status\":404}").unwrap_throw()),
     }
 }
+async fn make_error_response() -> HttpResponse {
+    HttpResponse::NotFound().json(
+        serde_json::from_str::<Value>("{\"status\":404,\"message\":\"Error\"}").unwrap_throw(),
+    )
+}
 
 #[get("/lnurlp/{name}")]
 pub async fn lnurl(db: web::Data<Pool<Sqlite>>, payload: web::Path<String>) -> impl Responder {
-    let error_response = HttpResponse::NotFound().json(
-        serde_json::from_str::<Value>("{\"status\":404,\"message\":\"Error\"}").unwrap_throw(),
-    );
-    match get_username(db, &payload).await {
-        Some(user) => {
-            if user.lightning_url.is_empty() {
-                return error_response;
-            };
-            let user_domain: Vec<&str> = user.lightning_url.split('@').collect();
-            if user_domain.len() > 1 {
-                if let Ok(json_respon) = reqwest::get(format!(
-                    "https://{}/.well-known/lnurlp/{}",
-                    user_domain[1], user_domain[0]
-                ))
-                .await
-                {
-                    match json_respon.json::<Value>().await {
-                        Ok(lnurl_json) => HttpResponse::Ok().json(lnurl_json),
-                        Err(_) => error_response,
-                    }
-                } else {
-                    error_response
+    let (user_info, error_response) = join!(get_username(db, &payload), make_error_response());
+    if let Some(user) = user_info {
+        if user.lightning_url.is_empty() {
+            return error_response;
+        };
+        let user_domain: Vec<&str> = user.lightning_url.split('@').collect();
+        if user_domain.len() > 1 {
+            if let Ok(json_respon) = reqwest::get(format!(
+                "https://{}/.well-known/lnurlp/{}",
+                user_domain[1], user_domain[0]
+            ))
+            .await
+            {
+                match json_respon.json::<Value>().await {
+                    Ok(lnurl_json) => HttpResponse::Ok().json(lnurl_json),
+                    Err(_) => error_response,
                 }
             } else {
                 error_response
             }
+        } else {
+            error_response
         }
-        None => error_response,
+    } else {
+        error_response
     }
 }
