@@ -19,7 +19,7 @@ leptos_router = { version = "0.6", features = ["nightly"] }
 sqlx = { version = "0.7", features = [ "runtime-tokio-rustls", "sqlite" ], optional = true}
 wasm-bindgen = "0.2.89"
 serde = { version = "1.0.188", features = ["derive"] }
-reqwest = { version ="0.11.20", optional = true }
+reqwest = { version ="0.11.20", features = ["json"], optional = true }
 serde_json = {version = "1.0.107"}
 wasm-bindgen-futures = "0.4.37"
 js-sys = "0.3.60"
@@ -31,6 +31,7 @@ chrono = { version = "0.4.31", features = ["serde"], optional = true }
 uuid = { version = "1.6.1", features = ["v4"] }
 nostr-sdk = "0.31"
 qrcode-generator = "4.1.9"
+futures = { version = "0.3.30", optional = true}
 
 [features]
 csr = ["leptos/csr", "leptos_meta/csr", "leptos_router/csr"]
@@ -45,6 +46,7 @@ ssr = [
   "leptos/ssr",
   "leptos_meta/ssr",
   "leptos_router/ssr",
+  "dep:futures"
 ]
 
 # Defines a size-optimized profile for the WASM bundle in release mode

@@ -3372,6 +3372,7 @@ dependencies = [
  "cfg-if",
  "chrono",
  "console_error_panic_hook",
+ "futures",
  "http 0.2.12",
  "js-sys",
  "lazy_static",
