@@ -1,7 +1,17 @@
+use std::collections::HashMap;
+
 use actix_web::{get, web, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sqlx::{FromRow, Pool, Sqlite};
+use wasm_bindgen::UnwrapThrowExt;
+
+const RELAYS: [&str; 3] = [
+    "wss://relay.siamstr.com",
+    "wss://relay.notoshi.win",
+    "wss://bostr.lecturify.net",
+];
+const SIGN_RELAYS: [&str; 1] = ["wss://sign.siamstr.com"];
 
 #[derive(Debug, Deserialize)]
 pub struct Name {
@@ -17,90 +27,84 @@ pub struct UsersData {
     pub created: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct NostrUser {
-    pub names: Value,
-    pub relays: Value,
-    pub nip46: Value,
+    pub names: HashMap<String, String>,
+    pub relays: HashMap<String, Vec<String>>,
+    pub nip46: HashMap<String, Vec<String>>,
 }
 
-pub async fn get_username(
-    db: web::Data<Pool<Sqlite>>,
-    name: &str,
-) -> std::io::Result<Option<UsersData>> {
+impl From<UsersData> for NostrUser {
+    fn from(user: UsersData) -> NostrUser {
+        fn str_to_string(s: &str) -> String {
+            s.to_string()
+        }
+        let mut names: HashMap<String, String> = HashMap::new();
+        names.insert(user.name.clone(), user.pubkey.clone());
+        let mut relays: HashMap<String, Vec<String>> = HashMap::new();
+        relays.insert(user.pubkey.clone(), RELAYS.map(str_to_string).to_vec());
+        let mut nip_46: HashMap<String, Vec<String>> = HashMap::new();
+        nip_46.insert(user.pubkey.clone(), SIGN_RELAYS.map(str_to_string).to_vec());
+        NostrUser {
+            names,
+            relays,
+            nip46: nip_46,
+        }
+    }
+}
+
+pub async fn get_username(db: web::Data<Pool<Sqlite>>, name: &str) -> Option<UsersData> {
     let query = format!("SELECT * FROM users WHERE name='{name}'");
     match sqlx::query_as::<_, UsersData>(&query)
         .fetch_one(&**db.clone())
         .await
     {
-        Ok(user) => Ok(Some(user)),
-        Err(_) => Ok(None),
+        Ok(user) => Some(user),
+        Err(_) => None,
     }
 }
 
 #[get("/nostr.json")]
 pub async fn verify(db: web::Data<Pool<Sqlite>>, payload: web::Query<Name>) -> impl Responder {
-    let user = get_username(db, &payload.name).await.unwrap();
-    match user {
+    match get_username(db, &payload.name).await {
         Some(user) => {
-            let user_respon = format!("{{\"{}\":\"{}\"}}", user.name, user.pubkey);
-            let relay_respon = format!("{{\"{}\":{}}}", user.pubkey, "[\"wss://relay.siamstr.com\", \"wss://relay.notoshi.win\", \"wss://bostr.lecturify.net/?accurate=1\"]");
-            let nip46 = format!("{{\"{}\":{}}}", user.pubkey, "[\"wss://sign.siamstr.com\"]");
-            let respon: NostrUser = NostrUser {
-                names: serde_json::from_str(&user_respon).unwrap(),
-                relays: serde_json::from_str(&relay_respon).unwrap(),
-                nip46: serde_json::from_str(&nip46).unwrap(),
-            };
+            let respon: NostrUser = NostrUser::from(user);
             HttpResponse::Ok().json(respon)
         }
         None => HttpResponse::NotFound()
-            .json(serde_json::from_str::<Value>("{\"status\":404}").unwrap()),
+            .json(serde_json::from_str::<Value>("{\"status\":404}").unwrap_throw()),
     }
 }
 
 #[get("/lnurlp/{name}")]
 pub async fn lnurl(db: web::Data<Pool<Sqlite>>, payload: web::Path<String>) -> impl Responder {
-    let user = get_username(db, &payload).await.unwrap();
-    match user {
+    let error_response = HttpResponse::NotFound().json(
+        serde_json::from_str::<Value>("{\"status\":404,\"message\":\"Error\"}").unwrap_throw(),
+    );
+    match get_username(db, &payload).await {
         Some(user) => {
             if user.lightning_url.is_empty() {
-                return HttpResponse::NotFound()
-                    .json(serde_json::from_str::<Value>("{\"status\":404}").unwrap());
+                return error_response;
             };
             let user_domain: Vec<&str> = user.lightning_url.split('@').collect();
             if user_domain.len() > 1 {
-                let respon = reqwest::get(format!(
+                if let Ok(json_respon) = reqwest::get(format!(
                     "https://{}/.well-known/lnurlp/{}",
                     user_domain[1], user_domain[0]
                 ))
                 .await
-                .unwrap()
-                .text()
-                .await
-                .unwrap();
-                let json_respon = serde_json::from_str::<Value>(&respon);
-                match json_respon {
-                    Ok(expr) => {
-                        HttpResponse::Ok().json(expr)
+                {
+                    match json_respon.json::<Value>().await {
+                        Ok(lnurl_json) => HttpResponse::Ok().json(lnurl_json),
+                        Err(_) => error_response,
                     }
-                    Err(expr) => {
-                        println!("{:#?}", expr);
-                        HttpResponse::NotFound().json(
-                            serde_json::from_str::<Value>(
-                                "{{\"status\":400,\"message\":\"Error\"}",
-                            )
-                            .unwrap(),
-                        )
-                    }
+                } else {
+                    error_response
                 }
             } else {
-                return HttpResponse::NotFound().json(
-                    serde_json::from_str::<Value>("{{\"status\":400,\"message\":\"Error\"}")
-                        .unwrap(),
-                );
+                error_response
             }
         }
-        None => HttpResponse::NotFound()
-            .json(serde_json::from_str::<Value>("{\"status\":404}").unwrap()),
+        None => error_response,
     }
 }

@@ -4,6 +4,7 @@ pub mod api;
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     use std::fs;
+    use futures::join;
     use std::time::Duration;
 
     use actix_files::Files;
@@ -97,8 +98,7 @@ async fn main() -> std::io::Result<()> {
         .idle_timeout(Duration::from_secs(10))
         .max_lifetime(Duration::from_secs(30))
         .connect_lazy(DB_URL).unwrap();
-    create_data_table(db.clone()).await;
-    import_json(db.clone()).await;
+    join!(create_data_table(db.clone()), import_json(db.clone()));
     let conf = get_configuration(None).await.unwrap();
     let addr = conf.leptos_options.site_addr;
     // Generate the list of routes in your Leptos App
