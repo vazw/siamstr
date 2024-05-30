@@ -1,10 +1,9 @@
-use std::collections::HashMap;
-
 use actix_web::{get, web, HttpResponse, Responder};
 use futures::join;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sqlx::{FromRow, Pool, Sqlite};
+use std::collections::HashMap;
 use wasm_bindgen::UnwrapThrowExt;
 
 const RELAYS: [&str; 3] = [
@@ -76,6 +75,7 @@ pub async fn verify(db: web::Data<Pool<Sqlite>>, payload: web::Query<Name>) -> i
             .json(serde_json::from_str::<Value>("{\"status\":404}").unwrap_throw()),
     }
 }
+
 async fn make_error_response() -> HttpResponse {
     HttpResponse::NotFound().json(
         serde_json::from_str::<Value>("{\"status\":404,\"message\":\"Error\"}").unwrap_throw(),
