@@ -1,5 +1,6 @@
 pub mod donate;
 pub mod footer;
+pub mod loading;
 pub mod nav;
 pub mod nofusers;
 pub mod notfound;
