@@ -72,75 +72,75 @@ pub fn SignInPage() -> impl IntoView {
     };
 
     view! {
-        <div class="block w-9/12 max-h-fit max-w-full bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 text-center justify-items-center p-5">
-            <AnimatedShow
-                when=show_login
-                show_class="fade-in-1000"
-                hide_class="fade-out-100"
-                hide_delay=Duration::from_millis(100)
-            >
-                <label class="mt-6 text-sm leading-3 text-gray-900 dark:text-gray-300 break-words sm:text-xs md:text-lg">
-                    "กด Login ด้วย Nostr Extensions"
-                </label>
-                <br/>
-                <button class="btn btn--primary" on:click=on_click>
-                    "Login"
-                </button>
-                <br/>
-                <label class="mt-6 text-sm leading-3 text-gray-900 dark:text-gray-300 break-words sm:text-xs md:text-lg">
-                    "- หรือ -"
-                </label>
-                <br/>
-                <label class="text-sm leading-3 text-gray-900 dark:text-gray-300 sm:text-xs md:text-lg">
-                    "กรอก Nostr Public Key(npub)"
-                </label>
-                <br/>
-                <input
-                    type="text"
-                    class="text-gray-900 dark:text-gray-100 rounded-lg bg-gray-100 dark:bg-gray-900 border-purple-600 border-2 w-7/12"
-                    prop:placeholder="Nostr Public Key / npub"
-                    on:input=move |ev| {
-                        let val = event_target_value(&ev)
-                            .parse::<String>()
-                            .unwrap_or("".to_string());
-                        pub_key.set(val);
-                    }
-                />
+		<div class="block w-9/12 max-h-fit max-w-full bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 text-center justify-items-center p-1">
+			<AnimatedShow
+				when={show_login}
+				show_class="fade-in-1000"
+				hide_class="fade-out-100"
+				hide_delay={Duration::from_millis(100)}
+			>
+				<label class="mt-6 text-sm leading-3 text-gray-900 dark:text-gray-300 break-words sm:text-xs md:text-lg">
+					"กด Login ด้วย Nostr Extensions"
+				</label>
+				<br/>
+				<button class="btn btn--primary" on:click={on_click}>
+					"Login"
+				</button>
+				<br/>
+				<label class="mt-6 text-sm leading-3 text-gray-900 dark:text-gray-300 break-words sm:text-xs md:text-lg">
+					"- หรือ -"
+				</label>
+				<br/>
+				<label class="text-sm leading-3 text-gray-900 dark:text-gray-300 sm:text-xs md:text-lg">
+					"กรอก Nostr Public Key(npub)"
+				</label>
+				<br/>
+				<input
+					type="text"
+					class="text-gray-900 dark:text-gray-100 rounded-lg bg-gray-100 dark:bg-gray-900 border-purple-600 border-2 w-7/12"
+					prop:placeholder="Nostr Public Key / npub"
+					on:input={move |ev| {
+						let val = event_target_value(&ev)
+							.parse::<String>()
+							.unwrap_or("".to_string());
+						pub_key.set(val);
+					}}
+				/>
 
-                <br/>
-                <ButtonGood
-                    show_register=show_register
-                    show_login=show_login
-                    pub_key=pub_key
-                    user_resouce=npub_check_res
-                />
-            </AnimatedShow>
-            <Suspense fallback=move || {
-                view! {
-                    <LoadingIndi/>
-                }
-            }>
-                // handles the error from the resource
-                <ErrorBoundary fallback=|_| {
-                    view! { <p>"เกิดข้อผิดพลาด"</p> }
-                }>
-                    {move || {
-                        view! {
-                            <RegisterPage
-                                show_register=show_register
-                                show_user=show_user
-                                pub_key=pub_key
-                                username=username
-                                use_lnurl=use_lnurl
-                                lnurl=lnurl
-                            />
-                        }
-                    }}
+				<br/>
+				<ButtonGood
+					show_register={show_register}
+					show_login={show_login}
+					pub_key={pub_key}
+					user_resouce={npub_check_res}
+				/>
+			</AnimatedShow>
+			<Suspense fallback={move || {
+				view! { <LoadingIndi/> }
+			}}>
+				// handles the error from the resource
+				<ErrorBoundary fallback={|_| {
+					view! {
+						<p>"เกิดข้อผิดพลาด"</p>
+					}
+				}}>
+					{move || {
+						view! {
+							<RegisterPage
+								show_register={show_register}
+								show_user={show_user}
+								pub_key={pub_key}
+								username={username}
+								use_lnurl={use_lnurl}
+								lnurl={lnurl}
+							/>
+						}
+					}}
 
-                </ErrorBoundary>
-            </Suspense>
-        </div>
-    }
+				</ErrorBoundary>
+			</Suspense>
+		</div>
+	}
 }
 
 #[component]
@@ -167,64 +167,67 @@ fn ButtonGood(
         };
     };
     view! {
-        <div class="text-xs text-red-500">
-            <Suspense fallback=move || {
-                view! {
-                    <LoadingIndi/>
-                }
-            }>
-                // handles the error from the resource
-                <ErrorBoundary fallback=|_| {
-                    view! { <p>"เกิดข้อผิดพลาด"</p> }
-                }>
-                    {move || {
-                        if pub_key.get().is_empty() {
-                            view! {
-                                <button class="btn btn--secondary cursor-not-allowed" disabled>
-                                    "สมัครรับ Nip-05"
-                                </button>
-                            }
-                        } else {
-                            match user_resouce.clone().get().expect("server respon") {
-                                Ok(value) => {
-                                    match value.user {
-                                        Some(_) => {
-                                            view! {
-                                                <button
-                                                    class="btn btn--secondary cursor-not-allowed"
-                                                    disabled
-                                                >
-                                                    "Public Key นี้ได้สมัครไว้แล้ว"
-                                                </button>
-                                            }
-                                        }
-                                        None => {
-                                            view! {
-                                                <button class="btn btn--primary" on:click=on_click_regis>
-                                                    "สมัครรับ Nip-05"
-                                                </button>
-                                            }
-                                        }
-                                    }
-                                }
-                                Err(_) => {
-                                    view! {
-                                        <button
-                                            class="btn btn--secondary cursor-not-allowed"
-                                            disabled
-                                        >
-                                            "สมัครรับ Nip-05"
-                                        </button>
-                                    }
-                                }
-                            }
-                        }
-                    }}
+		<div class="text-xs text-red-500">
+			<Suspense fallback={move || {
+				view! { <LoadingIndi/> }
+			}}>
+				// handles the error from the resource
+				<ErrorBoundary fallback={|_| {
+					view! {
+						<p>"เกิดข้อผิดพลาด"</p>
+					}
+				}}>
+					{move || {
+						if pub_key.get().is_empty() {
+							view! {
+								<button
+									class="btn btn--secondary cursor-not-allowed"
+									disabled
+								>
+									"สมัครรับ Nip-05"
+								</button>
+							}
+						} else {
+							match user_resouce.clone().get().expect("server respon") {
+								Ok(value) => {
+									match value.user {
+										Some(_) => {
+											view! {
+												<button
+													class="btn btn--secondary cursor-not-allowed"
+													disabled
+												>
+													"Public Key นี้ได้สมัครไว้แล้ว"
+												</button>
+											}
+										}
+										None => {
+											view! {
+												<button class="btn btn--primary" on:click={on_click_regis}>
+													"สมัครรับ Nip-05"
+												</button>
+											}
+										}
+									}
+								}
+								Err(_) => {
+									view! {
+										<button
+											class="btn btn--secondary cursor-not-allowed"
+											disabled
+										>
+											"สมัครรับ Nip-05"
+										</button>
+									}
+								}
+							}
+						}
+					}}
 
-                </ErrorBoundary>
-            </Suspense>
-        </div>
-    }
+				</ErrorBoundary>
+			</Suspense>
+		</div>
+	}
 }
 
 #[component]
