@@ -6,13 +6,13 @@ use sqlx::{FromRow, Pool, Sqlite};
 use std::collections::HashMap;
 use wasm_bindgen::UnwrapThrowExt;
 
-const RELAYS: [&str; 3] = [
-    "wss://relay.siamstr.com",
-    "wss://relay.notoshi.win",
-    "wss://bostr.lecturify.net",
-    "wss://relay.nostr.band",
+const RELAYS: Vec<String> = vec![
+    "wss://relay.siamstr.com".to_string(),
+    "wss://relay.notoshi.win".to_string(),
+    "wss://bostr.lecturify.net".to_string(),
+    "wss://relay.nostr.band".to_string(),
 ];
-const SIGN_RELAYS: [&str; 1] = ["wss://sign.siamstr.com"];
+const SIGN_RELAYS: Vec<String> = vec!["wss://sign.siamstr.com".to_string()];
 
 #[derive(Debug, Deserialize)]
 pub struct Name {
@@ -43,9 +43,9 @@ impl From<UsersData> for NostrUser {
         let mut names: HashMap<String, String> = HashMap::new();
         names.insert(user.name.clone(), user.pubkey.clone());
         let mut relays: HashMap<String, Vec<String>> = HashMap::new();
-        relays.insert(user.pubkey.clone(), RELAYS.map(str_to_string).to_vec());
+        relays.insert(user.pubkey.clone(), RELAYS);
         let mut nip_46: HashMap<String, Vec<String>> = HashMap::new();
-        nip_46.insert(user.pubkey.clone(), SIGN_RELAYS.map(str_to_string).to_vec());
+        nip_46.insert(user.pubkey.clone(), SIGN_RELAYS);
         NostrUser {
             names,
             relays,
