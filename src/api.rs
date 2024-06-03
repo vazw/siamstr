@@ -1,18 +1,21 @@
 use actix_web::{get, web, HttpResponse, Responder};
 use futures::join;
+use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sqlx::{FromRow, Pool, Sqlite};
 use std::collections::HashMap;
 use wasm_bindgen::UnwrapThrowExt;
 
-const RELAYS: Vec<String> = vec![
-    "wss://relay.siamstr.com".to_string(),
-    "wss://relay.notoshi.win".to_string(),
-    "wss://bostr.lecturify.net".to_string(),
-    "wss://relay.nostr.band".to_string(),
-];
-const SIGN_RELAYS: Vec<String> = vec!["wss://sign.siamstr.com".to_string()];
+lazy_static! {
+    static ref RELAYS: Vec<String> = vec![
+        "wss://relay.siamstr.com".to_string(),
+        "wss://relay.notoshi.win".to_string(),
+        "wss://bostr.lecturify.net".to_string(),
+        "wss://relay.nostr.band".to_string(),
+    ];
+    static ref SIGN_RELAYS: Vec<String> = vec!["wss://sign.siamstr.com".to_string()];
+}
 
 #[derive(Debug, Deserialize)]
 pub struct Name {
