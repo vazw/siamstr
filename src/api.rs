@@ -40,15 +40,12 @@ pub struct NostrUser {
 
 impl From<UsersData> for NostrUser {
     fn from(user: UsersData) -> NostrUser {
-        fn str_to_string(s: &str) -> String {
-            s.to_string()
-        }
         let mut names: HashMap<String, String> = HashMap::new();
         names.insert(user.name.clone(), user.pubkey.clone());
         let mut relays: HashMap<String, Vec<String>> = HashMap::new();
-        relays.insert(user.pubkey.clone(), RELAYS);
+        relays.insert(user.pubkey.clone(), RELAYS.clone());
         let mut nip_46: HashMap<String, Vec<String>> = HashMap::new();
-        nip_46.insert(user.pubkey.clone(), SIGN_RELAYS);
+        nip_46.insert(user.pubkey.clone(), SIGN_RELAYS.clone());
         NostrUser {
             names,
             relays,
