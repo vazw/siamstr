@@ -10,6 +10,7 @@ const RELAYS: [&str; 3] = [
     "wss://relay.siamstr.com",
     "wss://relay.notoshi.win",
     "wss://bostr.lecturify.net",
+    "wss://relay.nostr.band",
 ];
 const SIGN_RELAYS: [&str; 1] = ["wss://sign.siamstr.com"];
 
