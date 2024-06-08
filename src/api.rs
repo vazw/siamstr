@@ -55,7 +55,8 @@ impl From<UsersData> for NostrUser {
 }
 
 pub async fn get_username(db: web::Data<Pool<Sqlite>>, name: &str) -> Option<UsersData> {
-    let query = format!("SELECT * FROM users WHERE name='{name}'");
+    let l_name = name.to_lowercase();
+    let query = format!("SELECT * FROM users WHERE name='{l_name}'");
     match sqlx::query_as::<_, UsersData>(&query)
         .fetch_one(&**db.clone())
         .await
