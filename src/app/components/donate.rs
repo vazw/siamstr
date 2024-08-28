@@ -48,13 +48,14 @@ pub fn Donate() -> impl IntoView {
 					<button
 						class="btn btn-accent w-fit text-xs sm:text-xs md:text-sm text-black dark:text-white"
 						on:click={move |_| {
-							if let Some(clipboard) = window().navigator().clipboard() {
-								let _ = clipboard.write_text(LNURL);
-							} else {
-								window()
-									.alert_with_message("Something went wrong :(")
-									.unwrap();
-							}
+							// if let Some(clipboard) = window().navigator().clipboard() {
+							let clipboard = window().navigator().clipboard();
+                            let _ = clipboard.write_text(LNURL);
+							// } else {
+							// 	window()
+							// 		.alert_with_message("Something went wrong :(")
+							// 		.unwrap();
+							// }
 						}}
 					>
 
