@@ -7,11 +7,14 @@ use sqlx::{FromRow, Pool, Sqlite};
 use std::collections::HashMap;
 use wasm_bindgen::UnwrapThrowExt;
 
+// TODO make user choose relay of your choice
 lazy_static! {
     static ref RELAYS: Vec<String> = vec![
         "wss://relay.siamstr.com".to_string(),
+        "wss://wot.siamstr.com".to_string(),
         "wss://relay.notoshi.win".to_string(),
-        "wss://bostr.lecturify.net".to_string(),
+        "wss://nos.lol".to_string(),
+        "wss://relay.damus.io".to_string(),
         "wss://relay.nostr.band".to_string(),
     ];
     static ref SIGN_RELAYS: Vec<String> = vec!["wss://sign.siamstr.com".to_string()];
