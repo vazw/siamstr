@@ -3,20 +3,19 @@ pub mod api;
 #[cfg(feature = "ssr")]
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    use std::fs;
     use futures::join;
     use std::time::Duration;
 
     use actix_files::Files;
     use actix_web::*;
+    use api::{lnurl, verify};
     use leptos::*;
+    use leptos_actix::{generate_route_list, LeptosRoutes};
+    use siamstr::app::core_api::api::DB_URL;
+    use siamstr::app::*;
     use sqlx::sqlite::SqlitePoolOptions;
     use sqlx::{migrate::MigrateDatabase, Sqlite};
     use sqlx::{Executor, Pool};
-    use leptos_actix::{generate_route_list, LeptosRoutes};
-    use siamstr::app::*;
-    use siamstr::app::core_api::api::DB_URL;
-    use api::{verify, lnurl};
 
     pub async fn create_data_table(db: Pool<Sqlite>) {
         let _con = db
@@ -37,53 +36,6 @@ async fn main() -> std::io::Result<()> {
             .await;
     }
 
-
-    use serde::Deserialize;
-
-    #[derive(Debug, Clone, Deserialize)]
-    pub struct Oid {
-        #[serde(rename="$oid")]
-        pub id: String
-    }
-    #[derive(Debug, Clone, Deserialize)]
-    pub struct UsersData {
-        #[serde(rename="_id")]
-        pub id: Oid,
-        pub username: String,
-        pub pubkey: String,
-        #[serde(rename="lightningAddress")]
-        pub lightningaddress: String,
-        #[serde(rename="registeredAt")]
-        pub registeredat: String,
-    }
-
-    pub async fn import_json(db: Pool<Sqlite>) {
-        if let Ok(json_file) = fs::File::open("users.json") {
-            let json_data = std::io::BufReader::new(json_file);
-            let json: Vec<UsersData> = serde_json::from_reader(json_data)
-                .expect("file should be proper JSON");
-            // let 
-            let mut updated :i32 = 0;
-            for user in json.iter() {
-                match sqlx::query("INSERT INTO users (id,name,pubkey,lightning_url,created) VALUES (?,?,?,?,?)")
-                        .bind(&user.id.id)
-                        .bind(&user.username)
-                        .bind(&user.pubkey)
-                        .bind(&user.lightningaddress)
-                        .bind(&user.registeredat)
-                        .execute(&db)
-                        .await
-                         {
-                    Ok(_result) => updated+=1,
-                    Err(_) => println!("Failed to add : {:#?}", user.username),
-                }
-            println!("Updated User : {updated}")
-            }
-        } else {
-            println!("Not Found json Back-UP file, skip back up process");
-        }
-    }
-
     if !Sqlite::database_exists(DB_URL).await.unwrap_or(false) {
         println!("Creating database {}", DB_URL);
         match Sqlite::create_database(DB_URL).await {
@@ -97,8 +49,9 @@ async fn main() -> std::io::Result<()> {
         .max_connections(10)
         .idle_timeout(Duration::from_secs(10))
         .max_lifetime(Duration::from_secs(30))
-        .connect_lazy(DB_URL).unwrap();
-    join!(create_data_table(db.clone()), import_json(db.clone()));
+        .connect_lazy(DB_URL)
+        .unwrap();
+    join!(create_data_table(db.clone()));
     let conf = get_configuration(None).await.unwrap();
     let addr = conf.leptos_options.site_addr;
     // Generate the list of routes in your Leptos App
@@ -162,4 +115,3 @@ pub fn main() {
 
     leptos::mount_to_body(App);
 }
-
