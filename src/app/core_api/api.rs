@@ -1,6 +1,6 @@
 use leptos::*;
-use serde::{Deserialize, Serialize};
 use nostr_sdk::prelude::*;
+use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "ssr")]
 use chrono::Local;
@@ -9,7 +9,7 @@ use uuid::Uuid;
 #[cfg(feature = "ssr")]
 pub const DB_URL: &str = "sqlite://db/database.db";
 #[cfg(feature = "ssr")]
-use sqlx::{FromRow, Row, Pool, Sqlite};
+use sqlx::{FromRow, Pool, Row, Sqlite};
 
 #[cfg(feature = "ssr")]
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize, PartialEq, Eq)]
@@ -51,19 +51,17 @@ pub struct BoolRespons {
     pub status: i8,
 }
 
-#[server]
+#[server(prefix = "/api", endpoint = "/count_users")]
 pub async fn count_users(_count: i32) -> Result<CountsRespon, ServerFnError> {
     if leptos::leptos_dom::is_server() {
         use actix_web::web::Data;
         use leptos_actix::*;
         let con = extract::<Data<Pool<Sqlite>>>().await?;
         let query = "SELECT COUNT(*) FROM users";
-        let result = sqlx::query(query)
-            .fetch_one(&**con.clone())
-            .await;
+        let result = sqlx::query(query).fetch_one(&**con.clone()).await;
         match result {
             Ok(user) => {
-                let num :i32=user.get(0);
+                let num: i32 = user.get(0);
                 Ok(CountsRespon { count: num })
             }
             Err(_) => Ok(CountsRespon { count: 0 }),
@@ -73,7 +71,7 @@ pub async fn count_users(_count: i32) -> Result<CountsRespon, ServerFnError> {
     }
 }
 
-#[server]
+#[server(prefix = "/api", endpoint = "/check_npub")]
 pub async fn check_npub(public_key: String) -> Result<UserRespons, ServerFnError> {
     use std::str::FromStr;
     let mut hex_npub = String::new();
@@ -109,7 +107,7 @@ pub async fn check_npub(public_key: String) -> Result<UserRespons, ServerFnError
     }
 }
 
-#[server]
+#[server(prefix = "/api", endpoint = "/check_username")]
 pub async fn check_username(username: String) -> Result<BoolRespons, ServerFnError> {
     if leptos::leptos_dom::is_server() {
         use actix_web::web::Data;
@@ -133,7 +131,7 @@ pub async fn check_username(username: String) -> Result<BoolRespons, ServerFnErr
     }
 }
 
-#[server]
+#[server(prefix = "/api", endpoint = "/add_user")]
 pub async fn add_user(
     username: String,
     pubkey: String,
@@ -155,14 +153,16 @@ pub async fn add_user(
         use actix_web::web::Data;
         use leptos_actix::*;
         let con = extract::<Data<Pool<Sqlite>>>().await?;
-        match sqlx::query("INSERT INTO users (id,name,pubkey,lightning_url,created) VALUES (?,?,?,?,?)")
-            .bind(id)
-            .bind(lowercase_name)
-            .bind(hex_npub)
-            .bind(lnurl)
-            .bind(time_now)
-            .execute(&**con.clone())
-            .await
+        match sqlx::query(
+            "INSERT INTO users (id,name,pubkey,lightning_url,created) VALUES (?,?,?,?,?)",
+        )
+        .bind(id)
+        .bind(lowercase_name)
+        .bind(hex_npub)
+        .bind(lnurl)
+        .bind(time_now)
+        .execute(&**con.clone())
+        .await
         {
             Ok(_user) => Ok(BoolRespons { status: 1 }),
             Err(_) => Ok(BoolRespons { status: 0 }),
@@ -172,15 +172,16 @@ pub async fn add_user(
     }
 }
 
-#[server]
+#[server(prefix = "/api", endpoint = "/edit_user")]
 pub async fn edit_user(
     username: String,
     pubkey: String,
     lnurl: String,
     events: String,
 ) -> Result<BoolRespons, ServerFnError> {
-    let events : Event = Event::from_json(events).unwrap();
-    if events.verify().is_ok() && events.pubkey.to_string() == pubkey {
+    let events: Event = Event::from_json(events).unwrap();
+    let check_time = (Timestamp::now().as_u64() - events.created_at().as_u64()).lt(&10);
+    if events.verify().is_ok() && events.pubkey.to_string().eq(&pubkey) && check_time {
         if leptos::leptos_dom::is_server() {
             use actix_web::web::Data;
             use leptos_actix::*;
@@ -197,15 +198,15 @@ pub async fn edit_user(
             Ok(BoolRespons { status: 0 })
         }
     } else {
-            Ok(BoolRespons { status: 0 })
-
+        Ok(BoolRespons { status: 0 })
     }
 }
 
-#[server]
+#[server(prefix = "/api", endpoint = "/delete_user")]
 pub async fn delete_user(pubkey: String, events: String) -> Result<BoolRespons, ServerFnError> {
-    let events : Event = Event::from_json(events).unwrap();
-    if events.pubkey.to_string() == pubkey && events.verify().is_ok() {
+    let events: Event = Event::from_json(events).unwrap();
+    let check_time = (Timestamp::now().as_u64() - events.created_at().as_u64()).lt(&10);
+    if events.pubkey.to_string() == pubkey && events.verify().is_ok() && check_time {
         if leptos::leptos_dom::is_server() {
             use actix_web::web::Data;
             use leptos_actix::*;
@@ -222,7 +223,6 @@ pub async fn delete_user(pubkey: String, events: String) -> Result<BoolRespons, 
             Ok(BoolRespons { status: 0 })
         }
     } else {
-            Ok(BoolRespons { status: 0 })
-
+        Ok(BoolRespons { status: 0 })
     }
 }
