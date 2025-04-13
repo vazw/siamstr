@@ -86,8 +86,8 @@ pub async fn check_npub(public_key: String) -> Result<UserRespons, ServerFnError
         use actix_web::web::Data;
         use leptos_actix::*;
         let con = extract::<Data<Pool<Sqlite>>>().await?;
-        let query = format!("SELECT * FROM users WHERE pubkey='{hex_npub}'");
-        let result = sqlx::query_as::<_, UsersData>(&query)
+        let query = "SELECT * FROM users WHERE pubkey = ?";
+        let result = sqlx::query_as::<_, UsersData>(query).bind(hex_npub)
             .fetch_one(&**con.clone())
             .await;
         match result {
@@ -117,8 +117,8 @@ pub async fn check_username(username: String) -> Result<BoolRespons, ServerFnErr
         } else {
             let con = extract::<Data<Pool<Sqlite>>>().await?;
             let username = username.to_lowercase();
-            let query = format!("SELECT * FROM users WHERE name='{username}'");
-            let result = sqlx::query_as::<_, UsersData>(&query)
+            let query = "SELECT * FROM users WHERE name = ?";
+            let result = sqlx::query_as::<_, UsersData>(query).bind(username)
                 .fetch_one(&**con.clone())
                 .await;
             match result {
@@ -187,10 +187,8 @@ pub async fn edit_user(
             use leptos_actix::*;
             let con = extract::<Data<Pool<Sqlite>>>().await?;
             let username = username.to_lowercase();
-            let query = format!(
-                "UPDATE users SET name='{username}', lightning_url='{lnurl}' WHERE pubkey='{pubkey}'"
-            );
-            match sqlx::query(&query).execute(&**con.clone()).await {
+            let query = "UPDATE users SET name = ?, lightning_url = ? WHERE pubkey = ?" ;
+            match sqlx::query(query).bind(username).bind(lnurl).bind(pubkey).execute(&**con.clone()).await {
                 Ok(_user) => Ok(BoolRespons { status: 1 }),
                 Err(_) => Ok(BoolRespons { status: 0 }),
             }
@@ -211,7 +209,7 @@ pub async fn delete_user(pubkey: String, events: String) -> Result<BoolRespons, 
             use actix_web::web::Data;
             use leptos_actix::*;
             let con = extract::<Data<Pool<Sqlite>>>().await?;
-            match sqlx::query("DELETE FROM users WHERE pubkey=(?)")
+            match sqlx::query("DELETE FROM users WHERE pubkey = ?")
                 .bind(pubkey)
                 .execute(&**con.clone())
                 .await

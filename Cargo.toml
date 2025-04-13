@@ -16,37 +16,46 @@ leptos = { version = "0.6", features = ["nightly"] }
 leptos_meta = { version = "0.6", features = ["nightly"] }
 leptos_actix = { version = "0.6", optional = true }
 leptos_router = { version = "0.6", features = ["nightly"] }
-sqlx = { version = "0.7", features = [ "runtime-tokio-rustls", "sqlite" ], optional = true}
+sqlx = { version = "0.7", features = [
+    "runtime-tokio-rustls",
+    "sqlite",
+], optional = true }
 wasm-bindgen = "0.2.93"
 serde = { version = "1.0.188", features = ["derive"] }
-reqwest = { version ="0.11.20", features = ["json"], optional = true }
-serde_json = {version = "1.0.107"}
+reqwest = { version = "0.11.20", features = ["json"], optional = true }
+serde_json = { version = "1.0.107" }
 wasm-bindgen-futures = "0.4.43"
 js-sys = "0.3.70"
 serde-wasm-bindgen = "0.6.5"
-web-sys = { version = "0.3.70", features = ["Storage", "Document", "DomTokenList", "Navigator", "Clipboard"] }
+web-sys = { version = "0.3.70", features = [
+    "Storage",
+    "Document",
+    "DomTokenList",
+    "Navigator",
+    "Clipboard",
+] }
 tokio = "1.34.0"
 lazy_static = "1.4.0"
 chrono = { version = "0.4.31", features = ["serde"], optional = true }
 uuid = { version = "1.6.1", features = ["v4"] }
 nostr-sdk = "0.34"
 qrcode-generator = "4.1.9"
-futures = { version = "0.3.30", optional = true}
+futures = { version = "0.3.30", optional = true }
 
 [features]
 csr = ["leptos/csr", "leptos_meta/csr", "leptos_router/csr"]
 hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]
 ssr = [
-  "dep:actix-files",
-  "dep:actix-web",
-  "dep:leptos_actix",
-  "dep:reqwest",
-  "dep:sqlx",
-  "dep:chrono",
-  "leptos/ssr",
-  "leptos_meta/ssr",
-  "leptos_router/ssr",
-  "dep:futures"
+    "dep:actix-files",
+    "dep:actix-web",
+    "dep:leptos_actix",
+    "dep:reqwest",
+    "dep:sqlx",
+    "dep:chrono",
+    "leptos/ssr",
+    "leptos_meta/ssr",
+    "leptos_router/ssr",
+    "dep:futures",
 ]
 
 # Defines a size-optimized profile for the WASM bundle in release mode

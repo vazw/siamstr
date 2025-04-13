@@ -2,7 +2,7 @@
 use leptos::*;
 use qrcode_generator::QrCodeEcc;
 
-const LNURL: &str = "LNURL1DP68GURN8GHJ7EM9W3SKCCNE9E3K7MF0D3H82UNVWQHHVCT6WU7PKHC0";
+const LNURL: &str = "vaz@siamstr.com";
 
 #[component]
 pub fn QrCodeCmp() -> impl IntoView {
@@ -24,16 +24,16 @@ pub fn Donate() -> impl IntoView {
 		<div class="flex flex-col mt-8 w-9/12 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 text-center items-center justify-items-center p-5 place-content-center content-center">
 			<label class="text-xs sm:text-xs md:text-sm text-black dark:text-white">
 				"บริการนี้ฟรี หากท่านต้องการสนับสนุนค่ากาแฟ และโดเมน."
-				<br/>
+				<br />
 				"สามารถใช้ Bitcoin lightning ⚡ เพื่อสนับสนุนเสรีภาพของสังคมพวกเราต่อไป."
-				<br/>
+				<br />
 				"This service is free, but operating it costs a bit of money and time."
-				<br/>
+				<br />
 				"If you like it, please consider a small lightning ⚡ donation to keep it alive."
-				<br/> "Zap me:⚡vaz@siamstr.com"
+				<br /> "Zap me:⚡vaz@siamstr.com"
 			</label>
 			<div class="rounded-lg justify-center items-center border-2 text-white text-xl font-bold p-2 m-2 w-fit self-center">
-				<QrCodeCmp/>
+				<QrCodeCmp />
 			</div>
 			<label class="block my-1 text-sm font-medium text-gray-900 dark:text-white">
 				- หรือ -
@@ -48,14 +48,8 @@ pub fn Donate() -> impl IntoView {
 					<button
 						class="btn btn-accent w-fit text-xs sm:text-xs md:text-sm text-black dark:text-white"
 						on:click={move |_| {
-							// if let Some(clipboard) = window().navigator().clipboard() {
 							let clipboard = window().navigator().clipboard();
-                            let _ = clipboard.write_text(LNURL);
-							// } else {
-							// 	window()
-							// 		.alert_with_message("Something went wrong :(")
-							// 		.unwrap();
-							// }
+							let _ = clipboard.write_text(LNURL);
 						}}
 					>
 
@@ -66,7 +60,7 @@ pub fn Donate() -> impl IntoView {
 					<button
 						class="btn btn-accent w-full text-xs sm:text-xs md:text-sm text-black dark:text-white"
 						data-npub="npub1tr66yvqghfdgwv9yxhmg7xx6pvgvu5uvdc42tgdhsys8vvzdt8msev06fl"
-						data-relays="wss://relay.damus.io,wss://relay.siamstr.com,wss://relay.notoshi.win,wss://relay.nostr.band"
+						data-relays="wss://relay.damus.io,wss://relay.siamdev.com,wss://relay.notoshi.win,wss://relay.nostr.band"
 					>
 						"Zapเลย⚡️"
 					</button>

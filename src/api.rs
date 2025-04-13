@@ -7,11 +7,11 @@ use sqlx::{FromRow, Pool, Sqlite};
 use std::collections::HashMap;
 use wasm_bindgen::UnwrapThrowExt;
 
-// TODO make user choose relay of your choice
+// TODO: make user choose relay of your choice
 lazy_static! {
     static ref RELAYS: Vec<String> = vec![
-        "wss://relay.siamstr.com".to_string(),
-        "wss://wot.siamstr.com".to_string(),
+        "wss://relay.siamdev.cc".to_string(),
+        "wss://relayrs.notoshi.win/".to_string(),
         "wss://relay.notoshi.win".to_string(),
         "wss://nos.lol".to_string(),
         "wss://relay.damus.io".to_string(),
@@ -59,14 +59,10 @@ impl From<UsersData> for NostrUser {
 
 pub async fn get_username(db: web::Data<Pool<Sqlite>>, name: &str) -> Option<UsersData> {
     let l_name = name.to_lowercase();
-    let query = format!("SELECT * FROM users WHERE name='{l_name}'");
-    match sqlx::query_as::<_, UsersData>(&query)
-        .fetch_one(&**db.clone())
-        .await
-    {
-        Ok(user) => Some(user),
-        Err(_) => None,
-    }
+    let query = "SELECT * FROM users WHERE name = ?";
+    sqlx::query_as::<_, UsersData>(query).bind(l_name)
+            .fetch_one(&**db.clone())
+            .await.ok()
 }
 
 #[get("/nostr.json")]
