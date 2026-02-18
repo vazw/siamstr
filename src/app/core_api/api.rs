@@ -36,6 +36,7 @@ pub struct UsersDataResult {
     pub created: String,
 }
 
+// spellchecker:off
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct UserRespons {
     pub user: Option<UsersDataResult>,
@@ -64,7 +65,7 @@ pub async fn count_users(_count: i32) -> Result<CountsRespon, ServerFnError> {
                 let num: i32 = user.get(0);
                 Ok(CountsRespon { count: num })
             }
-            Err(_) => Ok(CountsRespon { count: 0 }),
+            Err(e) => Err(ServerFnError::Response(e.to_string())),
         }
     } else {
         Ok(CountsRespon { count: 0 })
@@ -87,7 +88,8 @@ pub async fn check_npub(public_key: String) -> Result<UserRespons, ServerFnError
         use leptos_actix::*;
         let con = extract::<Data<Pool<Sqlite>>>().await?;
         let query = "SELECT * FROM users WHERE pubkey = ?";
-        let result = sqlx::query_as::<_, UsersData>(query).bind(hex_npub)
+        let result = sqlx::query_as::<_, UsersData>(query)
+            .bind(hex_npub)
             .fetch_one(&**con.clone())
             .await;
         match result {
@@ -118,7 +120,8 @@ pub async fn check_username(username: String) -> Result<BoolRespons, ServerFnErr
             let con = extract::<Data<Pool<Sqlite>>>().await?;
             let username = username.to_lowercase();
             let query = "SELECT * FROM users WHERE name = ?";
-            let result = sqlx::query_as::<_, UsersData>(query).bind(username)
+            let result = sqlx::query_as::<_, UsersData>(query)
+                .bind(username)
                 .fetch_one(&**con.clone())
                 .await;
             match result {
@@ -180,15 +183,21 @@ pub async fn edit_user(
     events: String,
 ) -> Result<BoolRespons, ServerFnError> {
     let events: Event = Event::from_json(events).unwrap();
-    let check_time = (Timestamp::now().as_u64() - events.created_at().as_u64()).lt(&10);
+    let check_time = (Timestamp::now().as_u64() - events.created_at.as_u64()).lt(&10);
     if events.verify().is_ok() && events.pubkey.to_string().eq(&pubkey) && check_time {
         if leptos::leptos_dom::is_server() {
             use actix_web::web::Data;
             use leptos_actix::*;
             let con = extract::<Data<Pool<Sqlite>>>().await?;
             let username = username.to_lowercase();
-            let query = "UPDATE users SET name = ?, lightning_url = ? WHERE pubkey = ?" ;
-            match sqlx::query(query).bind(username).bind(lnurl).bind(pubkey).execute(&**con.clone()).await {
+            let query = "UPDATE users SET name = ?, lightning_url = ? WHERE pubkey = ?";
+            match sqlx::query(query)
+                .bind(username)
+                .bind(lnurl)
+                .bind(pubkey)
+                .execute(&**con.clone())
+                .await
+            {
                 Ok(_user) => Ok(BoolRespons { status: 1 }),
                 Err(_) => Ok(BoolRespons { status: 0 }),
             }
@@ -203,7 +212,7 @@ pub async fn edit_user(
 #[server(prefix = "/api", endpoint = "/delete_user")]
 pub async fn delete_user(pubkey: String, events: String) -> Result<BoolRespons, ServerFnError> {
     let events: Event = Event::from_json(events).unwrap();
-    let check_time = (Timestamp::now().as_u64() - events.created_at().as_u64()).lt(&10);
+    let check_time = (Timestamp::now().as_u64() - events.created_at.as_u64()).lt(&10);
     if events.pubkey.to_string() == pubkey && events.verify().is_ok() && check_time {
         if leptos::leptos_dom::is_server() {
             use actix_web::web::Data;
@@ -224,3 +233,4 @@ pub async fn delete_user(pubkey: String, events: String) -> Result<BoolRespons, 
         Ok(BoolRespons { status: 0 })
     }
 }
+// spellchecker:on

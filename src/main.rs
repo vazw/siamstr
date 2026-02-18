@@ -1,3 +1,5 @@
+use actix_cors::Cors;
+
 #[cfg(feature = "ssr")]
 pub mod api;
 #[cfg(feature = "ssr")]
@@ -58,11 +60,20 @@ async fn main() -> std::io::Result<()> {
     let routes = generate_route_list(App);
     println!("listening on http://{}", &addr);
 
+    env_logger::init();
+
     HttpServer::new(move || {
         let leptos_options = &conf.leptos_options;
         let site_root = &leptos_options.site_root;
+        let cors = Cors::default()
+            .allow_any_origin()
+            .allowed_methods(vec!["GET", "POST", "DELETE", "PUT"])
+            .send_wildcard()
+            .max_age(3600);
 
         App::new()
+            .wrap(cors)
+            .wrap(middleware::Logger::default())
             .route("/api/{tail:.*}", leptos_actix::handle_server_fns())
             // serve JS/WASM/CSS from `pkg`
             .service(Files::new("/pkg", format!("{site_root}/pkg")))

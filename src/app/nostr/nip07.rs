@@ -41,8 +41,7 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
 use web_sys::Window;
 
-use nostr_sdk::event::{self, unsigned};
-use nostr_sdk::{key, Event, PublicKey, UnsignedEvent};
+use nostr_sdk::{event, key, Event, PublicKey, UnsignedEvent};
 
 /// NIP07 error
 #[derive(Debug)]
@@ -54,7 +53,7 @@ pub enum Error {
     /// Event error
     Event(event::Error),
     /// Unsigned error
-    Unsigned(unsigned::Error),
+    Unsigned(event::Error),
     /// Generic WASM error
     Wasm(JsValue),
     /// Impossible to get window
@@ -103,11 +102,11 @@ impl From<event::Error> for Error {
     }
 }
 
-impl From<unsigned::Error> for Error {
-    fn from(e: unsigned::Error) -> Self {
-        Self::Unsigned(e)
-    }
-}
+// impl From<unsigned::Error> for Error {
+//     fn from(e: unsigned::Error) -> Self {
+//         Self::Unsigned(e)
+//     }
+// }
 
 impl From<JsValue> for Error {
     fn from(e: JsValue) -> Self {
@@ -168,7 +167,7 @@ impl Nip07Signer {
         let public_key: String = result
             .as_string()
             .ok_or_else(|| Error::TypeMismatch(String::from("expected a hex string")))?;
-        Ok(PublicKey::from_hex(public_key)?)
+        Ok(PublicKey::from_hex(&public_key)?)
     }
 
     /// Sign event
@@ -179,7 +178,7 @@ impl Nip07Signer {
             .tags
             .iter()
             .map(|t| {
-                t.as_vec()
+                t.clone().to_vec()
                     .iter()
                     .map(|v| JsValue::from_str(v))
                     .collect::<Array>()
@@ -207,7 +206,7 @@ impl Nip07Signer {
         Reflect::set(
             &unsigned_obj,
             &JsValue::from_str("kind"),
-            &(unsigned.kind.as_u64() as f64).into(),
+            &(unsigned.kind.as_u16() as f64).into(),
         )?;
 
         Reflect::set(&unsigned_obj, &JsValue::from_str("tags"), &tags.into())?;

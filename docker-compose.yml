@@ -1,0 +1,14 @@
+services:
+  app:
+    image: siamstr:latest
+    restart: unless-stopped
+    environment:
+        LEPTOS_OUTPUT_NAME: "siamstr"
+        LEPTOS_SITE_ROOT: "site"
+        LEPTOS_SITE_ADDR: "0.0.0.0:8008"
+        LEPTOS_SITE_PKG_DIR: "pkg"
+        RUST_LOG: "info"
+    ports:
+      - "8008:8008"
+    volumes:
+      - ./db/:/app/db/

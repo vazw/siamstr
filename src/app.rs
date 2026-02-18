@@ -18,17 +18,17 @@ pub fn App() -> impl IntoView {
     provide_meta_context();
 
     view! {
-        <Stylesheet id="leptos" href="/pkg/siamstr.css"/>
+        <Stylesheet id="leptos" href="/pkg/siamstr.css" />
 
         // sets the document title
-        <Title text="Siamstr"/>
+        <Title text="Siamstr" />
 
         // content for this welcome page
         <Router>
             <main>
                 <Routes>
-                    <Route path="" view=HomePage/>
-                    <Route path="/*any" view=NotFound/>
+                    <Route path="" view={HomePage} />
+                    <Route path="/*any" view={NotFound} />
                 </Routes>
             </main>
         </Router>
@@ -76,12 +76,12 @@ fn HomePage() -> impl IntoView {
         };
     });
     view! {
-        <NavBar/>
+        <NavBar />
         <div class="bg-white dark:bg-zinc-950 max-w-full max-h-full min-w-screen min-h-screen bg-cover grid grid-cols-1 justify-items-center py-20 sm:py-20 md:py-20 lg:py-20">
-            <SignInPage/>
-            <UsersCount count=count/>
-            <Donate/>
+            <SignInPage />
+            <UsersCount count={count} />
+            <Donate />
         </div>
-        <Footer dark_mode=dark_mode/>
+        <Footer dark_mode={dark_mode} />
     }
 }

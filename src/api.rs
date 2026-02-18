@@ -60,9 +60,11 @@ impl From<UsersData> for NostrUser {
 pub async fn get_username(db: web::Data<Pool<Sqlite>>, name: &str) -> Option<UsersData> {
     let l_name = name.to_lowercase();
     let query = "SELECT * FROM users WHERE name = ?";
-    sqlx::query_as::<_, UsersData>(query).bind(l_name)
-            .fetch_one(&**db.clone())
-            .await.ok()
+    sqlx::query_as::<_, UsersData>(query)
+        .bind(l_name)
+        .fetch_one(&**db.clone())
+        .await
+        .ok()
 }
 
 #[get("/nostr.json")]

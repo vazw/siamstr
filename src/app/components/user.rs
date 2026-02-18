@@ -78,9 +78,8 @@ pub fn UserPage(
 								let event = EventBuilder::new(
 										Kind::TextNote,
 										"Goodbye siamstr.com",
-										[],
 									)
-									.to_unsigned_event(pubkey);
+									.build(pubkey);
 								let signed_event: Event = signer
 									.sign_event(event)
 									.await
@@ -204,8 +203,8 @@ fn ButtonGood(
         spawn_local(async move {
             let signer = Nip07Signer::new().expect("Not Found Nostr Extensions");
             let pubkey = signer.get_public_key().await.unwrap();
-            let event = EventBuilder::new(Kind::TextNote, "Edit user siamstr.com", [])
-                .to_unsigned_event(pubkey);
+            let event = EventBuilder::new(Kind::TextNote, "Edit user siamstr.com")
+                .build(pubkey);
             let signed_event: Event = signer.sign_event(event).await.unwrap();
             let respon = edit_user(name, pubk, lnurlp, signed_event.as_json()).await;
             match respon {
